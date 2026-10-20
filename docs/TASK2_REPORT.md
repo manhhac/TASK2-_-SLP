@@ -159,7 +159,7 @@ python scripts/create_quick_dataset.py
 | Yêu cầu | Sản phẩm | Trạng thái |
 |---------|----------|------------|
 | Bộ dữ liệu + manifest + link/script tải | `data/manifests/*.jsonl`, `scripts/download_vivos_hf.py` | Đạt |
-| Data Card (nguồn, giấy phép, quy trình, thống kê, hạn chế) | `data/manifests/data_card.md` | Đạt |
+| Data Card (nguồn, giấy phép, quy trình, thống kê, hạn chế) | `data/data_card.md` (bản đầy đủ), `data/manifests/data_card.md` (bản sinh tự động) | Đạt |
 | Notebook EDA | `notebooks/eda.ipynb` | Đạt |
 | Script pipeline tái lập | `src/data/prepare_data.py` + `configs/` | Đạt |
 | Bảng trước/sau xử lý mất cân bằng | `data/imbalance_analysis.md` | Đạt |
@@ -484,7 +484,7 @@ asr_vi_en_task2/
 │   └── raw/
 ├── outputs/       (metric JSON + checkpoint các phiên bản)
 └── docs/          (TASK2_REPORT.md/html, experiment_log.md, team_contributions.md,
-                    baseline_selection.md, TRAINING_GUIDE.md,
+                    slide_outline.md, baseline_selection.md, TRAINING_GUIDE.md,
                     paper_vs_experiment.{csv,xlsx}, version_progress.{csv,xlsx})
 ```
 

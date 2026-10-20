@@ -3,15 +3,15 @@
 **Baseline**: Whisper-small fine-tune ASR VI + MarianMT (opus-mt-vi-en) cascade.
 **Proposed**: V1 (augment) → V2 (LoRA + beam) → V3 (noise-robust MT) → V4 (E2E so sánh).
 
-**GitHub:** https://github.com/manhhac/Task-2---SLP
+**GitHub:** https://github.com/manhhac/TASK2-_-SLP
 
 ## Project Status
 
-- ✅ **Giai đoạn 1**: Dataset Pipeline (hoàn thành)
-- ⏳ **Giai đoạn 2**: Baseline Reproduction (đã thiết kế, cần chạy training)
-- ⏳ **Giai đoạn 3**: Proposed Method (đã thiết kế, cần chạy thực nghiệm)
+- ✅ **Giai đoạn 1**: Dataset Pipeline (hoàn thành) — VIVOS sau xử lý: 10.887 mẫu (train 8.253 / dev 1.084 / test 1.550).
+- ✅ **Giai đoạn 2**: Baseline Reproduction (hoàn thành) — Whisper-small fine-tune + MarianMT cascade trên bộ VIVOS quick; WER 50,52 · CER 22,83 · BLEU 4,83.
+- ✅ **Giai đoạn 3**: Proposed Method (hoàn thành) — V1 (augment) → V2 (LoRA + beam) → V3 (noise-robust MT) → V4 (E2E). **Phiên bản chọn: V3** (WER 43,30 · BLEU 22,73).
 
-Xem chi tiết tiến độ ở [docs/TASK2_SUMMARY.md](docs/TASK2_SUMMARY.md).
+Xem chi tiết tiến độ ở [docs/TASK2_REPORT.md](docs/TASK2_REPORT.md).
 
 ## Cấu trúc Project
 
@@ -183,6 +183,33 @@ python -m src.train.run_version --version v4_e2e
 ### Cascade Metrics
 - RTF (Real-Time Factor)
 - Error propagation analysis (oracle MT vs cascade MT)
+
+## Config & Seeds
+
+### Cấu hình các phiên bản
+Tất cả config files nằm trong thư mục `configs/`:
+
+- `baseline.yaml`: Config baseline cơ bản
+- `v1_augment.yaml`: Config với augmentation
+- `v2_lora.yaml`: Config với LoRA fine-tuning
+- `v3_noise_robust_mt.yaml`: Config với noise-robust MT
+- `v4_e2e.yaml`: Config với end-to-end translation
+
+### Random Seeds
+Để đảm bảo tái lập được, tất cả experiment sử dụng 3 seeds:
+- Seed 42
+- Seed 123
+- Seed 2024
+
+Seed được set ở:
+- `src/utils/seed.py`: Set seed cho Python, NumPy, PyTorch
+- Mỗi config file có field `seeds: [42, 123, 2024]`
+
+### Logging
+Kết quả training và evaluation được lưu trong:
+- `outputs/{version}/seed_{seed}/logs/`: Training logs
+- `outputs/{version}/seed_{seed}/metrics/`: Evaluation metrics
+- `outputs/{version}/seed_{seed}/checkpoints/`: Model checkpoints
 
 ## Utils
 

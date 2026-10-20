@@ -49,12 +49,13 @@ def convert_vivos(vivos_dir, output_dir):
 
         with open(prompts_file, "r", encoding="utf-8") as f:
             for line in f:
-                parts = line.strip().split("\t")
+                # VIVOS format: audio_id<space>text (not tab-separated)
+                parts = line.strip().split(maxsplit=1)
                 if len(parts) >= 2:
                     audio_id = parts[0]
                     text_vi = parts[1]
 
-                    # Extract speaker_id from audio_id (e.g., VIVOSTEST01_001 -> VIVOSTEST01)
+                    # Extract speaker_id from audio_id (e.g., VIVOSSPK01_R001 -> VIVOSSPK01)
                     speaker_id = "_".join(audio_id.split("_")[:-1])
 
                     # Find the actual audio file
@@ -62,15 +63,17 @@ def convert_vivos(vivos_dir, output_dir):
                     if waves_dir.exists():
                         speaker_dir = waves_dir / speaker_id
                         if speaker_dir.exists():
-                            # VIVOS audio files might have different extensions
-                            for ext in [".wav", ".flac", ".mp3"]:
-                                audio_file = speaker_dir / f"{audio_id}{ext}"
-                                if audio_file.exists():
-                                    audio_path = audio_file
-                                    break
+                            # VIVOS audio files: try exact match with .wav extension
+                            audio_file = speaker_dir / f"{audio_id}.wav"
+                            if audio_file.exists():
+                                audio_path = audio_file
 
                     if audio_path is None:
-                        print(f"Warning: Audio file not found for {audio_id}")
+                        print(f"Warning: Audio file not found for {audio_id}, speaker: {speaker_id}")
+                        print(f"  Looking in: {speaker_dir}")
+                        print(f"  Speaker dir exists: {speaker_dir.exists()}")
+                        if speaker_dir.exists():
+                            print(f"  Files in speaker dir: {list(speaker_dir.glob('*.wav'))[:3]}")
                         continue
 
                     # Translate (VIVOS only has Vietnamese, we'll leave EN blank or use a placeholder)
@@ -89,7 +92,7 @@ def convert_vivos(vivos_dir, output_dir):
 
     # Write transcripts.tsv
     output_file = output_dir / "transcripts.tsv"
-    with open(output_file, "w", encoding="utf-8", newline="") as f:
+    with open(output_file, "w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerow(["audio_filename", "text_vi", "text_en", "speaker_id", "gender", "region"])
         for t in transcripts:

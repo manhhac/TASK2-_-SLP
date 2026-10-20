@@ -1,7 +1,7 @@
 version: v4_e2e
 description: "V4: so sánh Whisper end-to-end (translate task) vs cascade."
 data:
-  raw_dirs: ["data/raw/vietnamese", "data/raw/english"]
+  raw_dirs: ["data/raw/vietnamese/vivos"]
   manifest_dir: "data/manifests"
   feature_dir: "data/features"
   sample_rate: 16000
@@ -26,21 +26,24 @@ model:
   lora_alpha: 32
   lora_dropout: 0.05
   lora_target_modules: ["q_proj", "v_proj"]
+  task: "translate"
+  language: "en"
 train:
-  output_dir: "outputs/v4"
-  num_epochs: 10
-  batch_size: 16
-  grad_accum: 2
+  output_dir: "outputs/v4_quick"
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 4
   lr: 1.0e-4
   warmup_ratio: 0.1
   weight_decay: 0.01
-  fp16: true
-  eval_steps: 500
-  save_steps: 500
-  logging_steps: 50
+  fp16: false
+  eval_steps: 5
+  save_steps: 5
+  logging_steps: 2
   patience: 3
-  seeds: [42, 123, 2024]
+  seeds: [42]
   use_augment: true
   use_beam_search: true
   beam_size: 5
   use_lm_fusion: false
+  use_quick_dataset: true

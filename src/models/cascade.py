@@ -1,5 +1,7 @@
 import torch
+from pathlib import Path
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
+from peft import PeftModel
 from .mt_model import build_mt_model, translate_vi_en
 
 
@@ -21,25 +23,42 @@ class CascadeASRMT:
             device: Device (cuda/cpu)
         """
         self.device = device
-        self.asr_proc = WhisperProcessor.from_pretrained(
-            asr_dir, language="vi", task="transcribe"
-        )
-        self.asr = WhisperForConditionalGeneration.from_pretrained(asr_dir).to(device).eval()
+        asr_path = Path(asr_dir)
+
+        # Check if this is a LoRA checkpoint or full model
+        if (asr_path / "adapter_config.json").exists():
+            # LoRA checkpoint: load base model + adapter
+            print(f"Loading LoRA checkpoint from {asr_dir}")
+            self.asr_proc = WhisperProcessor.from_pretrained(
+                "openai/whisper-small", language="vi", task="transcribe"
+            )
+            base_model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-small")
+            self.asr = PeftModel.from_pretrained(base_model, asr_dir).to(device).eval()
+        else:
+            # Full model or HuggingFace model
+            print(f"Loading full model from {asr_dir}")
+            self.asr_proc = WhisperProcessor.from_pretrained(
+                asr_dir, language="vi", task="transcribe"
+            )
+            self.asr = WhisperForConditionalGeneration.from_pretrained(asr_dir).to(device).eval()
+
         self.mt, self.mt_tok = build_mt_model(mt_name)
         self.mt = self.mt.to(device).eval()
 
     @torch.no_grad()
-    def transcribe(self, wavs, batch_size=8, num_beams=1):
+    def transcribe(self, wavs, batch_size=8, num_beams=1, task="transcribe", language="vi"):
         """
-        Transcribe audio thành text tiếng Việt.
+        Transcribe audio thành text tiếng Việt hoặc dịch sang tiếng Anh.
 
         Args:
             wavs: List[np.ndarray float32 16k]
             batch_size: Batch size
             num_beams: Beam size (1 = greedy)
+            task: Task (transcribe hoặc translate)
+            language: Ngôn ngữ (vi hoặc en)
 
         Returns:
-            List[str] text tiếng Việt
+            List[str] text
         """
         outs = []
         for i in range(0, len(wavs), batch_size):
@@ -50,8 +69,8 @@ class CascadeASRMT:
             ids = self.asr.generate(
                 feats,
                 num_beams=num_beams,
-                language="vi",
-                task="transcribe"
+                language=language,
+                task=task
             )
             outs.extend(self.asr_proc.tokenizer.batch_decode(ids, skip_special_tokens=True))
         return outs

@@ -1,22 +1,12 @@
-Hạng mục,Paper công bố,Thực nghiệm nhóm,Chênh lệch,Ghi chú
-Dataset,VIVOS (15 giờ),Synthetic (20 samples),N/A,Data khác hoàn toàn
-Lượng data train (giờ),15,0.012,N/A,Demo data quá ít
-Kiến trúc,Whisper-small,Whisper-small,Giống,Sử dụng cùng model
-Số tham số Whisper,241M,241M,Giống,
-Tokenizer,Whisper tokenizer,Whisper tokenizer,Giống,
-Hyperparameter LR,1e-4,1e-4,Giống,
-Hyperparameter batch,16,4,Tài nguyên hạn chế,Giảm batch do memory
-Gradient accumulation,?,8,Tài nguyên hạn chế,
-Epochs,?,10,Dự đoán,
-Phần cứng,RTX 3090,CUDA,Tương tự,
-Thời gian train,~2-3 giờ,?,Chưa train với data thật,
-WER (dev),~25% (ước tính),5130.77%,Rất lớn,Data synthetic
-WER (test),~25% (ước tính),5130.77%,Rất lớn,Data synthetic
-CER (dev),~15% (ước tính),5414.29%,Rất lớn,Data synthetic
-CER (test),~15% (ước tính),5414.29%,Rất lớn,Data synthetic
-BLEU (dev),~30% (ước tính),0.0000,Rất lớn,ASR lỗi hoàn toàn
-BLEU (test),~30% (ước tính),0.0000,Rất lớn,ASR lỗi hoàn toàn
-chrF++ (dev),~0.6 (ước tính),0.3033,Rất lớn,ASR lỗi hoàn toàn
-chrF++ (test),~0.6 (ước tính),0.3033,Rất lớn,ASR lỗi hoàn toàn
-RTF,~0.05,7.80,Chậm,GPU chưa tối ưu
-Latency (ms),~50,?,Chưa đo,
+Hạng mục,Paper công bố,Thực nghiệm của nhóm,Chênh lệch,Ghi chú
+Dataset,VIVOS đầy đủ (~15 giờ, 65 speaker),VIVOS (10.887 mẫu) + bộ quick 140 mẫu cho thực nghiệm,Ít hơn (thực nghiệm),Dùng đúng nguồn VIVOS; không dùng synthetic cho kết quả báo cáo
+Lượng dữ liệu train (giờ),~15,~0.06 (100 mẫu quick),-99.6%,Giới hạn VRAM 8GB
+Kiến trúc,Whisper-small (241M),Whisper-small fine-tune + MarianMT cascade (241M + 77M),+ ~77M,Cascade cần thêm MT
+Tokenizer / vocab,Whisper BPE 51.865,Whisper BPE 51.865 / Marian SP,Giống,Dùng tokenizer gốc
+Hyper-parameter chính,"lr=1e-4, batch=256, nhiều epoch","lr=1e-4, batch=2, grad-accum 4, 2 epochs",Rút gọn,Do tài nguyên
+Phần cứng & thời gian train,Multi-GPU nhiều ngày,1x GTX 1070 8GB - vài phút mỗi lần,Nhỏ hơn nhiều,fp16 tắt
+WER (test),Không công bố cho Whisper-small/VIVOS,50.52 (baseline),Không xác định,Tập test 20 mẫu của bộ quick
+CER (test),Không công bố cho Whisper-small/VIVOS,22.83 (baseline),Không xác định,Tập test 20 mẫu của bộ quick
+BLEU (cascade, test),Không công bố cho Whisper-small/VIVOS,4.83,Không xác định,Lỗi ASR lan truyền sang MT
+chrF++ (cascade, test),Không công bố cho Whisper-small/VIVOS,25.52,Không xác định,
+RTF,~0.1 (tham chiếu mô hình lớn),0.23,Chậm hơn,GPU cũ chưa tối ưu

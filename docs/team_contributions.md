@@ -82,7 +82,5 @@ Ví dụ:
 
 ## Lưu ý
 
-- Bảng phân công này là mẫu, cần điền tên thật của các thành viên
-- Đóng góp có thể điều chỉnh tùy theo thực tế làm việc
-- Đảm bảo mỗi thành viên có đóng góp rõ ràng và minh bạch
-- Sử dụng GitHub để track lịch sử commit
+- Task 2 do **01 thành viên** thực hiện (Nguyễn Đức Mạnh - SE194525) → đóng góp 100%.
+- Toàn bộ mã nguồn, config, bảng kết quả và báo cáo đều nằm trong repo GitHub: https://github.com/manhhac/TASK2-_-SLP

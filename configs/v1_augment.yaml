@@ -28,16 +28,16 @@ model:
   lora_target_modules: ["q_proj", "v_proj"]
 train:
   output_dir: "outputs/v1"
-  num_epochs: 10
-  batch_size: 16
-  grad_accum: 2
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 4
   lr: 1.0e-4
   warmup_ratio: 0.1
   weight_decay: 0.01
-  fp16: true
-  eval_steps: 500
-  save_steps: 500
-  logging_steps: 50
+  fp16: false
+  eval_steps: 10
+  save_steps: 10
+  logging_steps: 5
   patience: 3
   seeds: [42, 123, 2024]
   use_augment: true

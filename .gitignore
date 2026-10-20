@@ -20,7 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
+# Virtual Environment
 venv/
 env/
 ENV/
@@ -33,35 +33,51 @@ ENV/
 *.swo
 *~
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / bí mật
+.env
+.env.local
+
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
-# Data
-data/raw/*
-!data/raw/.gitkeep
-# Keep manifests (small files)
-# data/manifests/*.jsonl  # COMMENTED OUT - allow pushing manifests
-data/features/*.json
-data/features/*.npy
+# Data files (quá lớn để upload)
+data/raw/vivos/
+data/raw/vietnamese/vivos/
+data/features/
+data/*.wav
 
-# Models and outputs
+# Model checkpoints (quá lớn)
 outputs/
 checkpoints/
 *.ckpt
-*.pth
+*.safetensors
 *.pt
+*.pth
 *.bin
+
+# Audio files
+*.wav
+*.flac
+*.mp3
+*.ogg
 
 # Logs
 logs/
 *.log
 tensorboard/
 
-# OS
-.DS_Store
-Thumbs.db
+# Submission folder (chỉ là copy, nộp trên Edunext)
+submission/
 
-# Environment
-.env
-.env.local
+# File hướng dẫn nội bộ
+FILES_TO_SUBMIT.txt
+SUBMISSION_CHECKLIST.md
+README_SUBMISSION.md
+
+# File test tạm
+test_vivos.py
+check_en_labels.py

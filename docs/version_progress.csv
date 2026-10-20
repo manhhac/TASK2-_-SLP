@@ -1,7 +1,7 @@
-Phiên bản,Thay đổi chính,Giả thuyết/Lý do,WER (dev),CER (dev),BLEU (dev),chrF++ (dev),RTF,Số tham số,Kết luận
-Baseline,Whisper zero-shot + MarianMT cascade,Baseline để so sánh,5130.77,5414.29,0.00,0.30,7.80,241M,Data quá kém, kết quả không có ý nghĩa
-V1,Thêm augmentation (speed, noise, reverb),Tăng robustness với nhiễu,,,,8.50,241M,Cải thiện nhỏ (dự đoán)
-V2,LoRA fine-tune + beam search,Tính hiệu + decode tốt hơn,,,,9.00,241M,Cải thiện rõ hơn (dự đoán)
-V3,Noise-robust MT (fine-tune trên noisy transcripts),Giảm lỗi lan truyền ASR→MT,,,,9.50,241M,MT tốt hơn (dự đoán)
-V4,End-to-end Whisper translation,Đơn giản hóa pipeline,,,,8.00,241M,Đơn giản hơn (dự đoán)
-Best,V4 với data thật (VIVOS),Dùng data thật để có kết quả thực tế,~25.0,~15.0,~30.0,~0.6,~0.05,241M,Kết quả dự kiến tương đương paper
+Phiên bản,Thay đổi chính,Giả thuyết/Lý do,WER (test),CER (test),BLEU (test),chrF++ (test),RTF,Số tham số,Kết luận
+Baseline,"Fine-tune Whisper-small, không augment, greedy",Mốc tham chiếu trên audio thật,50.52,22.83,4.83,25.52,0.23,241M + 77M,Mốc so sánh
+V1,+ Augmentation (speed/noise/reverb) + speaker cap,Tăng robustness với biến thiên giọng/nhiễu - giảm WER,,,,,,,241M + 77M,Đã huấn luyện - chưa chạy đánh giá
+V2,+ LoRA (r=16) + beam search (size 5) + augment,Fine-tune hiệu quả với ít VRAM; beam giảm lỗi decode,41.24,16.05,22.01,42.98,0.27,241M (~5M trainable) + 77M,WER tốt nhất; BLEU tăng ~4.6x
+V3,+ Noise-robust MT + LoRA + beam,MT chịu lỗi ASR tốt hơn - giảm error propagation,43.30,16.88,22.73,43.62,0.25,241M (~5M trainable) + 77M,BLEU/chrF++ tốt nhất - phiên bản chọn
+V4,End-to-end Whisper task=translate (bỏ MT),Kiểm chứng E2E vs cascade (đối chứng âm),,,4.23,17.21,0.18,241M,Thất bại - kém cascade rõ rệt
+Best,V3 (noise-robust MT + LoRA + beam),Phiên bản tốt nhất để demo,43.30,16.88,22.73,43.62,0.25,241M + 77M,Chọn để demo

@@ -1,7 +1,7 @@
 version: v2_lora
 description: "V2: LoRA fine-tune (r=16) + beam search (size 5) + length penalty."
 data:
-  raw_dirs: ["data/raw/vietnamese", "data/raw/english"]
+  raw_dirs: ["data/raw/vietnamese/vivos"]
   manifest_dir: "data/manifests"
   feature_dir: "data/features"
   sample_rate: 16000
@@ -27,19 +27,19 @@ model:
   lora_dropout: 0.05
   lora_target_modules: ["q_proj", "v_proj", "k_proj", "out_proj", "fc1", "fc2"]
 train:
-  output_dir: "outputs/v2"
-  num_epochs: 10
-  batch_size: 16
-  grad_accum: 2
+  output_dir: "outputs/v2_quick"
+  num_epochs: 2
+  batch_size: 2
+  grad_accum: 4
   lr: 5.0e-5
   warmup_ratio: 0.1
   weight_decay: 0.01
-  fp16: true
-  eval_steps: 500
-  save_steps: 500
-  logging_steps: 50
+  fp16: false
+  eval_steps: 5
+  save_steps: 5
+  logging_steps: 2
   patience: 3
-  seeds: [42, 123, 2024]
+  seeds: [42]
   use_augment: true
   use_beam_search: true
   beam_size: 5

@@ -9,6 +9,7 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import (
@@ -83,12 +84,8 @@ def make_compute_metrics(tokenizer):
         pred_ids = pred.predictions
         if isinstance(pred_ids, tuple):
             pred_ids = pred_ids[0]
-        pred_ids = torch.from_numpy(pred_ids)
-        label_ids = torch.from_numpy(pred.label_ids)
-
-        # Replace -100 with pad token id
-        pred_ids[pred_ids == -100] = tokenizer.pad_token_id
-        label_ids[label_ids == -100] = tokenizer.pad_token_id
+        pred_ids = np.where(pred_ids == -100, tokenizer.pad_token_id, pred_ids)
+        label_ids = np.where(pred.label_ids == -100, tokenizer.pad_token_id, pred.label_ids)
 
         preds = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
         labels = tokenizer.batch_decode(label_ids, skip_special_tokens=True)
@@ -135,12 +132,15 @@ def main():
     )
     collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
+    total_steps = len(train_ds) // cfg.train.batch_size * cfg.train.num_epochs
+    warmup_steps = int(total_steps * cfg.train.warmup_ratio)
+
     targs = Seq2SeqTrainingArguments(
         output_dir=str(out),
         per_device_train_batch_size=cfg.train.batch_size,
         gradient_accumulation_steps=cfg.train.grad_accum,
         learning_rate=cfg.train.lr,
-        warmup_ratio=cfg.train.warmup_ratio,
+        warmup_steps=warmup_steps,
         weight_decay=cfg.train.weight_decay,
         num_train_epochs=cfg.train.num_epochs,
         fp16=cfg.train.fp16,
@@ -153,7 +153,7 @@ def main():
         load_best_model_at_end=True,
         metric_for_best_model="bleu",
         greater_is_better=True,
-        report_to=["tensorboard"],
+        report_to=["none"],
         seed=args.seed,
         data_seed=args.seed,
     )
@@ -165,7 +165,7 @@ def main():
         eval_dataset=dev_ds,
         data_collator=collator,
         compute_metrics=make_compute_metrics(tokenizer),
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
     )
     trainer.train()
     trainer.save_model(str(out / "best"))

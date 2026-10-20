@@ -95,9 +95,13 @@ def alignment_ok(text_vi: str, duration: float, cfg) -> bool:
 
 # ---------- 4. Kiểm tra bản dịch EN ----------
 def translation_ok(vi: str, en: str) -> bool:
-    """Lọc các cặp dịch rõ ràng sai (quá ngắn, trùng nguyên văn VI, ký tự lạ)."""
-    if not en or not vi:
+    """Lọc các cặp dịch rõ ràng sai (quá ngắn, trùng nguyên văn VI, ký tự lạ).
+       Cho phép text_en trống nếu chỉ làm ASR."""
+    if not vi:
         return False
+    # Cho phép text_en trống (ASR-only mode)
+    if not en:
+        return True
     if len(en.split()) < 1:
         return False
     # Tỉ lệ độ dài từ VI-EN kỳ vọng ~0.7-1.5
@@ -147,22 +151,29 @@ def speaker_stratified_split(rows, cfg):
         strat=("strat", lambda s: s.mode().iloc[0]),
         n=("strat", "size"),
     ).reset_index()
-    sgkf = StratifiedGroupKFold(
-        n_splits=int(round(1 / (cfg.dev_ratio + cfg.test_ratio))),
-        shuffle=True, random_state=cfg.seed,
-    )
-    # Dùng chính speaker làm "group" để không lọt speaker
-    X = speakers[["strat"]].values
-    y = speakers["strat"].values
-    folds = list(sgkf.split(X, y, groups=speakers["speaker_id"].values))
-    # Lấy 1 fold làm test, 1 fold làm dev, phần còn lại train
-    test_idx = folds[0][1]
-    dev_idx = folds[1][1]
-    train_idx = np.setdiff1d(np.arange(len(speakers)),
-                             np.concatenate([test_idx, dev_idx]))
-    sp_train = set(speakers.iloc[train_idx]["speaker_id"])
-    sp_dev = set(speakers.iloc[dev_idx]["speaker_id"])
-    sp_test = set(speakers.iloc[test_idx]["speaker_id"])
+
+    # Nếu số speaker quá ít, dùng simple split thay vì stratified
+    n_speakers = len(speakers)
+    n_splits = int(round(1 / (cfg.dev_ratio + cfg.test_ratio)))
+
+    # Đếm số unique strat classes
+    n_strat_classes = speakers["strat"].nunique()
+
+    print(f"  Speakers: {n_speakers}, Strat classes: {n_strat_classes}, Required splits: {n_splits}")
+
+    # Dùng simple split cho VIVOS (vì mỗi speaker có strat class riêng)
+    print(f"  Using simple split by speaker")
+    np.random.seed(cfg.seed)
+    speaker_ids = speakers["speaker_id"].tolist()
+    np.random.shuffle(speaker_ids)
+
+    n_test = max(1, int(len(speaker_ids) * cfg.test_ratio))
+    n_dev = max(1, int(len(speaker_ids) * cfg.dev_ratio))
+
+    sp_test = set(speaker_ids[:n_test])
+    sp_dev = set(speaker_ids[n_test:n_test + n_dev])
+    sp_train = set(speaker_ids[n_test + n_dev:])
+
     df["split"] = df["speaker_id"].map(
         lambda s: "train" if s in sp_train else ("dev" if s in sp_dev else "test")
     )

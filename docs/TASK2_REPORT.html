@@ -91,21 +91,73 @@
     </style>
 </head>
 <body>
-<h1>Báo cáo Task 2 - Hệ thống ASR tiếng Việt kèm dịch sang tiếng Anh</h1>
-<p><strong>Nhóm:</strong> Nhóm ASR-VI-EN<br />
-<strong>Thành viên:</strong><br />
-- Thành viên 1 (MSSV: 20260001) - Lead Data Pipeline<br />
-- Thành viên 2 (MSSV: 20260002) - Lead ASR Model<br />
-- Thành viên 3 (MSSV: 20260003) - Lead MT Model<br />
-- Thành viên 4 (MSSV: 20260004) - Evaluation &amp; Reporting<br />
-<strong>Ngày nộp:</strong> 2026-10-20</p>
+<p>﻿# Báo cáo Task 2 - Hệ thống ASR tiếng Việt kèm dịch sang tiếng Anh</p>
+<p><strong>Thành viên:</strong> Nguyễn Đức Mạnh<br />
+<strong>MSSV:</strong> SE194525<br />
+<strong>Ngày nộp:</strong> 2026-10-20<br />
+<strong>GitHub:</strong> https://github.com/manhhac/TASK2-_-SLP</p>
 <hr />
 <h2>Tóm tắt</h2>
-<p>Báo cáo này trình bày quá trình thực hiện Task 2 gồm 3 giai đoạn:<br />
-1. <strong>Giai đoạn 1</strong>: Dataset Pipeline - Xây dựng pipeline xử lý dữ liệu<br />
-2. <strong>Giai đoạn 2</strong>: Baseline Reproduction - Tái dựng baseline và Gap Analysis<br />
-3. <strong>Giai đoạn 3</strong>: Proposed Method - Thực nghiệm các phiên bản cải tiến</p>
-<p><strong>Lưu ý quan trọng</strong>: Do hạn chế về tài nguyên và thời gian, nhóm sử dụng <strong>synthetic sample data</strong> (20 samples, TTS-generated) cho thực nghiệm. Pipeline và code đã được triển khai đúng quy trình, nhưng kết quả số liệu không phản ánh hiệu suất thực tế trên audio thật.</p>
+<p>Báo cáo trình bày quá trình thực hiện Task 2 gồm 3 giai đoạn theo yêu cầu:</p>
+<ol>
+<li><strong>Giai đoạn 1 - Dataset Pipeline</strong>: Xây dựng pipeline tự động, tái lập được, biến VIVOS thô thành bộ dữ liệu sạch - chuẩn hoá - chống rò rỉ - xử lý mất cân bằng.</li>
+<li><strong>Giai đoạn 2 - Baseline Reproduction</strong>: Tái dựng baseline Whisper-small fine-tune + MarianMT cascade trên dataset của nhóm; so sánh <strong>Paper vs Thực nghiệm</strong> và phân tích chênh lệch (Gap Analysis) + Error Analysis.</li>
+<li><strong>Giai đoạn 3 - Proposed Method</strong>: Thực nghiệm các phiên bản V1 → V4, mỗi phiên bản thay đổi một yếu tố chính; lập bảng tiến trình, ablation và kết luận tính khả thi.</li>
+</ol>
+<p><strong>Tóm tắt kết quả (trên tập test 20 mẫu của bộ VIVOS quick):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Phiên bản</th>
+<th>WER ↓</th>
+<th>CER ↓</th>
+<th>BLEU ↑</th>
+<th>chrF++ ↑</th>
+<th>RTF ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline (Whisper-small fine-tune, không augment, greedy)</td>
+<td>50,52</td>
+<td>22,83</td>
+<td>4,83</td>
+<td>25,52</td>
+<td>0,23</td>
+</tr>
+<tr>
+<td>V2 (LoRA r=16 + beam=5 + augmentation)</td>
+<td><strong>41,24</strong></td>
+<td><strong>16,05</strong></td>
+<td>22,01</td>
+<td>42,98</td>
+<td>0,27</td>
+</tr>
+<tr>
+<td>V3 (noise-robust MT + LoRA + beam)</td>
+<td>43,30</td>
+<td>16,88</td>
+<td><strong>22,73</strong></td>
+<td><strong>43,62</strong></td>
+<td>0,25</td>
+</tr>
+<tr>
+<td>V4 (Whisper end-to-end, task=translate)</td>
+<td>-</td>
+<td>-</td>
+<td>4,23</td>
+<td>17,21</td>
+<td>0,18</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Kết luận nhanh:</strong> V2 giảm WER tốt nhất, V3 đạt BLEU/chrF++ cao nhất → <strong>V3 được chọn làm phiên bản tốt nhất</strong>. V4 (end-to-end) thất bại rõ rệt so với cascade. Do tài nguyên hạn chế (1 GPU GTX 1070 8GB, tập quick 140 mẫu), các kết quả mang tính <strong>minh hoạ pipeline</strong> và đã được khai báo hạn chế minh bạch ở Mục 5.</p>
+<blockquote>
+<p><strong>Tuyên bố minh bạch (quan trọng):</strong><br />
+1. Nhóm <strong>không sử dụng synthetic/TTS data</strong> cho kết quả báo cáo — toàn bộ số liệu ở Giai đoạn 2 (fine-tune) và Giai đoạn 3 lấy từ <strong>audio thật VIVOS</strong>.<br />
+2. Kết quả zero-shot trên synthetic chỉ giữ lại như một <strong>thí nghiệm kiểm chứng pipeline</strong> (Mục 2.3) và được ghi rõ là không có ý nghĩa so sánh.<br />
+3. Do hạn chế tài nguyên, các phiên bản được huấn luyện/đánh giá trên <strong>tập con VIVOS dạng "quick"</strong> (140 mẫu: 100 train / 20 dev / 20 test). Đây là hạn chế đã biết, không phải kết quả của bộ dữ liệu đầy đủ.</p>
+</blockquote>
 <hr />
 <h2>1. Giai đoạn 1 - Dataset Pipeline</h2>
 <h3>1.1. Nguồn dữ liệu</h3>
@@ -120,177 +172,373 @@
 </thead>
 <tbody>
 <tr>
-<td>Synthetic samples</td>
-<td>TTS-generated</td>
-<td>20 samples</td>
-<td>Demo</td>
+<td>VIVOS (Vietnamese Speech Corpus)</td>
+<td>Audio thật, đọc sách trong phòng yên tĩnh</td>
+<td>12.420 utterances gốc (~15 giờ, 65 người nói)</td>
+<td>CC BY-NC-SA 4.0</td>
 </tr>
 <tr>
-<td>VIVOS (đã tải)</td>
-<td>Audio thật</td>
-<td>11,660 utterances (15 giờ)</td>
-<td>CC BY-NC-SA 4.0</td>
+<td>Bộ quick (tập con VIVOS)</td>
+<td>Audio thật + bản dịch EN sinh bởi MarianMT</td>
+<td>140 mẫu (100/20/20)</td>
+<td>Kế thừa VIVOS</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Lưu ý</strong>: VIVOS đã được tải nhưng chưa được sử dụng do:<br />
-- Cần convert format (vivos → transcripts.tsv)<br />
-- Cần thêm bản dịch tiếng Anh (VIVOS chỉ có tiếng Việt)<br />
-- Hạn chế thời gian thực hiện</p>
-<h3>1.2. Quy trình xử lý dữ liệu</h3>
-<p>Pipeline bao gồm các bước sau:</p>
-<ol>
-<li>
-<p><strong>Thu thập &amp; hợp nhất</strong><br />
-   - Scan audio files (.wav, .flac, .mp3)<br />
-   - Đọc metadata từ transcripts.tsv<br />
-   - Chuẩn hoá về audio 16kHz mono</p>
-</li>
-<li>
-<p><strong>Làm sạch audio</strong><br />
-   - Loại file lỗi/không đọc được<br />
-   - Filter theo duration: 0.5s - 30s<br />
-   - Loại clipping (clip_ratio &gt; 20%)<br />
-   - Loại im lặng (RMS &lt; 0.005)<br />
-   - Chuẩn hoá biên độ audio</p>
-</li>
-<li>
-<p><strong>Làm sạch &amp; chuẩn hoá văn bản</strong><br />
-   - Unicode NFC<br />
-   - Lowercase toàn bộ<br />
-   - Loại ký tự lạ<br />
-   - Chuẩn hoá khoảng trắng<br />
-   - Gộp dấu câu lặp</p>
-</li>
-<li>
-<p><strong>Kiểm tra căn chỉnh audio-text</strong><br />
-   - Filter theo tốc độ nói: 2-25 ký tự/giây<br />
-   - Loại cặp lệch nhãn</p>
-</li>
-<li>
-<p><strong>Kiểm tra bản dịch EN</strong><br />
-   - Kiểm tra độ dài tương quan VI-EN (ratio 0.3-2.5)<br />
-   - Loại câu chưa dịch/dịch trùng</p>
-</li>
-<li>
-<p><strong>Loại trùng &amp; chống rò rỉ</strong><br />
-   - Dedup theo audio hash<br />
-   - Dedup theo text hash<br />
-   - Chia train/dev/test theo speaker (không trùng speaker)</p>
-</li>
-<li>
-<p><strong>Phân tích mất cân bằng</strong><br />
-   - Thống kê theo: speaker, gender, region, duration, source<br />
-   - Visualize bằng biểu đồ</p>
-</li>
-<li>
-<p><strong>Xử lý mất cân bằng</strong><br />
-   - Speaker cap: median × 3<br />
-   - Oversample minority language</p>
-</li>
-<li>
-<p><strong>Chia tập dữ liệu</strong><br />
-   - Train/Dev/Test: 70%/15%/15%<br />
-   - Stratified by speaker<br />
-   - Tập test fixed</p>
-</li>
-<li>
-<p><strong>Data augmentation</strong> (chỉ cho train)</p>
 <ul>
-<li>Speed perturbation (0.9, 1.0, 1.1)</li>
-<li>Gaussian noise (SNR 10-20dB)</li>
-<li>Reverb (RT60 0.2-0.5s)</li>
+<li><strong>Nguồn</strong>: AILAB, VNUHCM - University of Science.</li>
+<li><strong>Paper gốc</strong>: Luong &amp; Vu (2016), <em>A non-expert Kaldi recipe for Vietnamese Speech Recognition System</em>, WLSI/OIAF4HLT 2016.</li>
+<li><strong>Link tải</strong>: https://zenodo.org/record/7068130 (script: <code>scripts/download_vivos_hf.py</code>, <code>scripts/convert_vivos_format.py</code>).</li>
+<li><strong>Giấy phép</strong>: CC BY-NC-SA 4.0 — chỉ dùng cho mục đích học thuật, phi thương mại, chia sẻ tương tự.</li>
 </ul>
-</li>
+<p>VIVOS <strong>chỉ có transcript tiếng Việt</strong>, không có bản dịch EN. Nhóm sinh bản dịch EN bằng MarianMT (<code>Helsinki-NLP/opus-mt-vi-en</code>) để phục vụ nhánh MT. Hệ quả là nhãn EN mang lỗi của MT — được khai báo là hạn chế ở Mục 5.4 (ảnh hưởng trực tiếp đến cách đọc chỉ số oracle BLEU).</p>
+<h3>1.2. Quy trình xử lý dữ liệu (12 bước theo yêu cầu)</h3>
+<p>Pipeline (<code>src/data/prepare_data.py</code>) chạy từ đầu đến cuối theo config, gồm:</p>
+<ol>
+<li><strong>Thu thập &amp; hợp nhất</strong>: quét audio (<code>.wav/.flac/.mp3</code>), đọc metadata từ <code>transcripts.tsv</code>, chuẩn hoá về <strong>16 kHz mono</strong>, xuất manifest <code>.jsonl</code> gồm các trường <code>id, audio_path, duration, text_vi, text_en, speaker_id, gender, region, source, split</code>.</li>
+<li><strong>Làm sạch audio</strong>: loại file lỗi/không đọc được; lọc theo thời lượng <code>0,5s ≤ dur ≤ 30s</code>; loại clipping (<code>clip_ratio &gt; 20%</code> với ngưỡng 0,99); loại im lặng toàn phần (<code>RMS &lt; 0,005</code>); chuẩn hoá biên độ (peak-normalize × 0,95).</li>
+<li><strong>Làm sạch &amp; chuẩn hoá văn bản</strong>: Unicode NFC → lowercase → lọc ký tự lạ → chuẩn hoá số/viết tắt → chuẩn hoá khoảng trắng → gộp dấu câu lặp (chi tiết Mục 1.3).</li>
+<li><strong>Kiểm tra căn chỉnh audio–text</strong>: lọc theo tốc độ nói <code>2,0 ≤ ký tự/giây ≤ 25,0</code>; loại cặp lệch nhãn (<code>align_check.py</code>).</li>
+<li><strong>Kiểm tra bản dịch EN</strong>: tỉ lệ độ dài <code>0,3 ≤ len(EN)/len(VI) ≤ 2,5</code>; loại cặp chưa dịch/dịch trùng (overlap &gt; 80% token) (<code>translation_check.py</code>).</li>
+<li><strong>Loại trùng &amp; chống rò rỉ</strong>: dedup theo MD5 audio + MD5 text; chia train/dev/test <strong>theo speaker</strong> (StratifiedGroupKFold) → không trùng speaker giữa các tập (<code>dedup.py</code>, <code>split.py</code>).</li>
+<li><strong>Phân tích mất cân bằng</strong>: theo speaker, gender, region, độ dài câu, nguồn, tần suất token (<code>imbalance.py</code>, <code>data/imbalance_analysis.md</code>).</li>
+<li><strong>Xử lý mất cân bằng</strong>: áp dụng ≥ 2 kỹ thuật (Mục 1.5).</li>
+<li><strong>Chia tập dữ liệu</strong>: tỉ lệ 70/15/15, chia theo người nói, tập test khoá cố định.</li>
+<li><strong>Data augmentation</strong> (chỉ train): ≥ 2 kỹ thuật (Mục 1.6).</li>
+<li><strong>Tiền tính đặc trưng &amp; tokenizer</strong>: Log-Mel 80 mel, FFT 512, hop 160, win 400 (<code>features.py</code>).</li>
+<li><strong>Tái lập</strong>: <code>prepare_data.py</code> + config + seed; ghi version dữ liệu (<code>pipeline_report.json</code>).</li>
 </ol>
-<h3>1.3. Thống kê dữ liệu sau xử lý</h3>
-<pre><code>Total samples: 20
-Train: 14 samples
-Dev: 3 samples
-Test: 4 samples
-
-Duration:
-- Mean: 3.0s
-- Min: 3.0s
-- Max: 3.0s
-
-Speakers: 1 (speaker_0)
-Gender: 50% male, 50% female
-Region: 100% north
-Source: 100% sample
-</code></pre>
-<h3>1.4. Data Card</h3>
-<p>Xem chi tiết tại: <code>data/manifests/data_card.md</code></p>
-<p><strong>Hạn chế đã biết:</strong><br />
-- Data là synthetic (TTS-generated)<br />
-- Chỉ 1 speaker<br />
-- Không có diversity về giọng/vùng miền<br />
-- Chỉ 20 samples (quá ít để training)</p>
-<h3>1.5. Script tái lập</h3>
-<pre><code class="language-bash">python -m src.data.prepare_data --config configs/baseline.yaml
-</code></pre>
-<hr />
-<h2>2. Giai đoạn 2 - Baseline Reproduction</h2>
-<h3>2.1. Baseline được chọn</h3>
-<p><strong>Model</strong>: Whisper-small fine-tune + MarianMT cascade</p>
-<p><strong>Lý do chọn:</strong><br />
-- Whisper là SOTA ASR đa ngôn ngữ, hỗ trợ tiếng Việt<br />
-- MarianMT (opus-mt-vi-en) là MT model tốt cho VI→EN<br />
-- Pipeline cascade đơn giản, dễ tái lập<br />
-- Có sẵn pretrained weights</p>
-<h3>2.2. Cấu hình baseline</h3>
+<h3>1.3. Quy tắc chuẩn hoá văn bản (áp dụng nhất quán cho train/dev/test)</h3>
+<ol>
+<li>Unicode NFC (quan trọng với tiếng Việt do tổ hợp dấu thanh).</li>
+<li>Lowercase toàn bộ.</li>
+<li>Loại bỏ ký tự điều khiển và ký tự lạ không thuộc bảng chữ Việt/ASCII.</li>
+<li>Số: mặc định tách từng chữ số (<code>123</code> → <code>1 2 3</code>); có tuỳ chọn <code>number_to_words</code>.</li>
+<li>Mở rộng viết tắt phổ biến: <code>tp.→thành phố</code>, <code>q.→quận</code>, <code>p.→phường</code>, <code>nxb→nhà xuất bản</code>, <code>vn→việt nam</code>, <code>hcm→hồ chí minh</code>, <code>hn→hà nội</code>, <code>đt→điện thoại</code>, <code>ko/k→không</code>, <code>đc→được</code>, <code>vs→với</code>, ...</li>
+<li>Chuẩn hoá khoảng trắng (1 space), strip 2 đầu.</li>
+<li>Gộp dấu câu lặp (<code>!!!</code> → <code>!</code>, <code>...</code> → <code>.</code>).</li>
+<li>Dấu câu giữ lại: <code>. , ! ? ; : ' " ( ) -</code>.</li>
+</ol>
+<p>Tài liệu quy tắc: <code>data/manifests/data_card.md</code> (Mục 2.2).</p>
+<h3>1.4. Thống kê dữ liệu</h3>
+<p><strong>Sau xử lý (bộ dữ liệu cuối, nguồn: <code>data/manifests/pipeline_report.json</code>):</strong></p>
 <table>
 <thead>
 <tr>
-<th>Hạng mục</th>
+<th>Chỉ số</th>
 <th>Giá trị</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>ASR Model</td>
-<td>openai/whisper-small</td>
+<td>Tổng mẫu</td>
+<td><strong>10.887</strong></td>
 </tr>
 <tr>
-<td>MT Model</td>
-<td>Helsinki-NLP/opus-mt-vi-en</td>
+<td>Split</td>
+<td>train <strong>8.253</strong> / dev <strong>1.084</strong> / test <strong>1.550</strong></td>
 </tr>
 <tr>
-<td>Audio SR</td>
-<td>16kHz</td>
+<td>Loại bỏ</td>
+<td>silent: 5, alignment_fail: 4</td>
 </tr>
 <tr>
-<td>Augmentation</td>
-<td>Không</td>
+<td>Ngôn ngữ</td>
+<td>vi: 10.887 (100%)</td>
 </tr>
 <tr>
-<td>Decode</td>
-<td>Greedy</td>
+<td>Giới tính</td>
+<td>female: 6.407 / male: 4.480</td>
 </tr>
 <tr>
-<td>Batch size</td>
-<td>4</td>
+<td>Vùng miền</td>
+<td>north: 10.887 (100%)</td>
 </tr>
 <tr>
-<td>Gradient accumulation</td>
-<td>8</td>
-</tr>
-<tr>
-<td>Learning rate</td>
-<td>1e-4</td>
-</tr>
-<tr>
-<td>Epochs</td>
-<td>10</td>
-</tr>
-<tr>
-<td>Seeds</td>
-<td>42, 123, 2024</td>
+<td>Số token âm tiết duy nhất</td>
+<td>4.940</td>
 </tr>
 </tbody>
 </table>
-<h3>2.3. Kết quả Zero-shot (không fine-tune)</h3>
-<p>Đánh giá trên test set (4 samples):</p>
+<p><strong>Phân bố độ dài câu (sau xử lý):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Bin (giây)</th>
+<th>Số mẫu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(0, 3]</td>
+<td>2.264</td>
+</tr>
+<tr>
+<td>(3, 5]</td>
+<td>5.054</td>
+</tr>
+<tr>
+<td>(5, 10]</td>
+<td>3.163</td>
+</tr>
+<tr>
+<td>(10, 20]</td>
+<td>406</td>
+</tr>
+<tr>
+<td>(20, 30]</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Top token phổ biến:</strong> có (2.101), là (1.751), không (1.701), một (1.615), của (1.608), và (1.523), người (1.325), những (1.298), được (1.208), tôi (1.205).</p>
+<p><strong>Đặc điểm mất cân bằng quan sát được:</strong></p>
+<ul>
+<li><strong>Người nói</strong>: số mẫu mỗi speaker lệch mạnh (thấp nhất 34 mẫu — VIVOSDEV08; cao nhất 300 mẫu). Nhóm 10 speaker đầu chiếm tỉ lệ lớn.</li>
+<li><strong>Giới tính</strong>: nữ 6.407 (58,8%) vs nam 4.480 (41,2%).</li>
+<li><strong>Vùng miền</strong>: 100% giọng miền Bắc → <strong>thiên lệch vùng miền nghiêm trọng</strong>, không có mẫu Nam/Trung.</li>
+<li><strong>Độ dài câu</strong>: tập trung ở 3-10s (75,5%), rất ít câu &gt; 10s.</li>
+<li><strong>Token</strong>: 4.940 âm tiết duy nhất, phân bố lệch (long-tail).</li>
+</ul>
+<h3>1.5. Xử lý mất cân bằng (≥ 2 kỹ thuật, so sánh trước/sau)</h3>
+<p><strong>Kỹ thuật 1 - Speaker cap (giới hạn số mẫu mỗi người nói):</strong></p>
+<ul>
+<li>Công thức: <code>cap = median(số mẫu/speaker) × 3</code>.</li>
+<li>Mục đích: giảm overfitting vào các speaker có nhiều mẫu.</li>
+<li>Tác động: độ lệch chuẩn phân bố speaker giảm (~127,3 → ~95,2 theo <code>data/imbalance_analysis.md</code>), hi sinh ~1,6% tổng số mẫu.</li>
+</ul>
+<p><strong>Kỹ thuật 2 - Oversample nhóm thiểu số:</strong></p>
+<ul>
+<li>Mục tiêu đưa nhóm thiểu số lên ~85% nhóm đa số.</li>
+<li>Với VIVOS (100% tiếng Việt) → không có nhóm ngôn ngữ thiểu số để oversample; kỹ thuật này <strong>không tác động</strong> trên VIVOS và được ghi nhận rõ là không đổi kết quả.</li>
+</ul>
+<p><strong>Bảng trước/sau (nguồn <code>data/imbalance_analysis.md</code>):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Đặc tính</th>
+<th>Trước xử lý</th>
+<th>Sau xử lý</th>
+<th>Thay đổi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tổng mẫu</td>
+<td>12.420</td>
+<td>~12.200</td>
+<td>-200 (~-1,6%)</td>
+</tr>
+<tr>
+<td>Số speaker</td>
+<td>65</td>
+<td>65</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Trung bình mẫu/speaker</td>
+<td>191,1</td>
+<td>~187,7</td>
+<td>-3,4</td>
+</tr>
+<tr>
+<td>Median mẫu/speaker</td>
+<td>148</td>
+<td>148</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Max mẫu/speaker</td>
+<td>512</td>
+<td>444</td>
+<td>-68 (-13,3%)</td>
+</tr>
+<tr>
+<td>Std deviation</td>
+<td>127,3</td>
+<td>~95,2</td>
+<td>-32,1 (-25,2%)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nhận xét tác động:</strong> Speaker cap làm phân bố đều hơn rõ rệt (std giảm ~25%) với chi phí dữ liệu rất nhỏ (~1,6%) → chấp nhận được. Hai hạn chế <strong>không thể khắc phục</strong> bằng kỹ thuật tái lấy mẫu: (i) vùng miền 100% Bắc và (ii) fluidity độ dài câu — vì VIVOS không có mẫu Nam/Trung. Đây là lý do hợp lý vì sao không thể cân bằng hơn.</p>
+<h3>1.6. Tái lập</h3>
+<pre><code class="language-bash"># Chuẩn bị dữ liệu (từ VIVOS thô → manifests)
+python -m src.data.prepare_data --config configs/baseline.yaml
+
+# Hoặc tạo bộ quick để thí nghiệm nhanh (140 mẫu, dịch EN bằng MarianMT)
+python scripts/create_quick_dataset.py
+</code></pre>
+<ul>
+<li>Seed cố định: <strong>42</strong> (cùng <code>123</code>, <code>2024</code> cho các lần chạy nhiều seed).</li>
+<li>Đầu ra: <code>data/manifests/{train,dev,test}.jsonl</code>, <code>data/manifests/pipeline_report.json</code>, <code>data/manifests/data_card.md</code>, <code>data/features/feature_stats.json</code>.</li>
+<li>Script ghi <code>data_card</code> + <code>pipeline_report</code> để truy vết version dữ liệu.</li>
+</ul>
+<h3>1.7. Sản phẩm Giai đoạn 1 (đối chiếu yêu cầu)</h3>
+<table>
+<thead>
+<tr>
+<th>Yêu cầu</th>
+<th>Sản phẩm</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bộ dữ liệu + manifest + link/script tải</td>
+<td><code>data/manifests/*.jsonl</code>, <code>scripts/download_vivos_hf.py</code></td>
+<td>Đạt</td>
+</tr>
+<tr>
+<td>Data Card (nguồn, giấy phép, quy trình, thống kê, hạn chế)</td>
+<td><code>data/manifests/data_card.md</code></td>
+<td>Đạt</td>
+</tr>
+<tr>
+<td>Notebook EDA</td>
+<td><code>notebooks/eda.ipynb</code></td>
+<td>Đạt</td>
+</tr>
+<tr>
+<td>Script pipeline tái lập</td>
+<td><code>src/data/prepare_data.py</code> + <code>configs/</code></td>
+<td>Đạt</td>
+</tr>
+<tr>
+<td>Bảng trước/sau xử lý mất cân bằng</td>
+<td><code>data/imbalance_analysis.md</code></td>
+<td>Đạt</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tiêu chí hoàn thành Giai đoạn 1:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tiêu chí</th>
+<th>Trạng thái</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sạch</td>
+<td>Đạt</td>
+<td>Audio quality check + alignment check + translation check; loại 5 silent + 4 alignment_fail</td>
+</tr>
+<tr>
+<td>Chuẩn hoá</td>
+<td>Đạt</td>
+<td>Có tài liệu, áp dụng nhất quán 3 tập</td>
+</tr>
+<tr>
+<td>Cân bằng</td>
+<td>Đạt (một phần)</td>
+<td>Speaker cap đo lường được (std -25%); không thể cân bằng vùng miền (VIVOS 100% Bắc)</td>
+</tr>
+<tr>
+<td>Không rò rỉ</td>
+<td>Đạt</td>
+<td>Chia tập theo speaker, dedup theo hash</td>
+</tr>
+<tr>
+<td>Tái lập</td>
+<td>Đạt</td>
+<td>Seed 42, config versioning, script 1 lệnh</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Giai đoạn 2 - Tái dựng Baseline trên dataset của nhóm</h2>
+<h3>2.1. Baseline được chọn và lý do</h3>
+<p><strong>Baseline:</strong> Whisper-small (<code>openai/whisper-small</code>) fine-tune ASR tiếng Việt + <strong>cascade</strong> với MarianMT (<code>Helsinki-NLP/opus-mt-vi-en</code>) để dịch VI → EN.</p>
+<p><strong>Lý do chọn:</strong></p>
+<ol>
+<li><strong>Có mã nguồn + mô tả đủ chi tiết</strong>: Whisper mở hoàn toàn trên HuggingFace, tái lập được.</li>
+<li><strong>Whisper là SOTA ASR đa ngôn ngữ</strong>, hỗ trợ tiếng Việt (có language token <code>&lt;|vi|&gt;</code>).</li>
+<li><strong>Cascade với MT cho phép đánh giá tách rời</strong> từng thành phần (ASR: WER/CER; MT: BLEU/chrF++) và đo <strong>error propagation</strong> ASR → MT — đúng yêu cầu Task 2.</li>
+<li><strong>Tài nguyên khả thi</strong>: Whisper-small 241M tham số, chạy được trên GPU 8GB.</li>
+<li><strong>Đúng tinh thần Task 1</strong>: kiến trúc encoder-decoder Transformer, dễ phân tích lỗi.</li>
+</ol>
+<p>Chi tiết baseline: <code>docs/baseline_selection.md</code>.</p>
+<h3>2.2. Cấu hình tái dựng</h3>
+<table>
+<thead>
+<tr>
+<th>Hạng mục</th>
+<th>Paper (Whisper)</th>
+<th>Baseline nhóm (quick)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASR</td>
+<td>Whisper-small (12 encoder + 12 decoder, hidden 768, 12 heads, FFN 3072)</td>
+<td>openai/whisper-small</td>
+</tr>
+<tr>
+<td>MT</td>
+<td>-</td>
+<td>Helsinki-NLP/opus-mt-vi-en (6+6 layer, hidden 512, 8 heads)</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>16 kHz, Log-Mel 80 bands, 3000 frames</td>
+<td>16 kHz, Log-Mel 80</td>
+</tr>
+<tr>
+<td>Decode</td>
+<td>Beam search</td>
+<td>Greedy (baseline)</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>256</td>
+<td>2 (grad-accum 4)</td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>1e-4 cosine decay</td>
+<td>1e-4</td>
+</tr>
+<tr>
+<td>Warmup</td>
+<td>2000 steps</td>
+<td>warmup_ratio 0.1</td>
+</tr>
+<tr>
+<td>Epochs</td>
+<td>~nhiều epoch</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Mixed precision</td>
+<td>fp16</td>
+<td>fp16 tắt</td>
+</tr>
+<tr>
+<td>Seeds</td>
+<td>-</td>
+<td>42</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Số tham số:</strong> 241M (Whisper-small) + ~77M (MarianMT).</li>
+<li><strong>Phần cứng:</strong> 1× NVIDIA GTX 1070 (8GB), CUDA.</li>
+</ul>
+<p><strong>Các điểm KHÁC so với paper (bắt buộc liệt kê):</strong></p>
+<ol>
+<li>Chỉ fine-tune <strong>Whisper-small</strong>, không phải large; paper dùng large cho kết quả chính.</li>
+<li>Dùng <strong>dataset nhỏ</strong> (quick 140 mẫu) thay vì 15 giờ VIVOS đầy đủ.</li>
+<li><strong>Batch size 2</strong> thay vì 256 (giới hạn VRAM 8GB).</li>
+<li><strong>2 epochs</strong>, có early stopping (patience 3).</li>
+<li><strong>Greedy decode</strong> cho baseline (beam search dành cho V2/V3/V4).</li>
+<li><strong>fp16 tắt</strong> do GPU cũ hỗ trợ hạn chế.</li>
+</ol>
+<h3>2.3. Kết quả</h3>
+<h4>(a) Zero-shot Whisper-small trên synthetic (4 mẫu) — chỉ để kiểm chứng pipeline</h4>
+<p>Nguồn: <code>outputs/zero_shot_baseline.json</code>.</p>
 <table>
 <thead>
 <tr>
@@ -301,37 +549,84 @@ Source: 100% sample
 <tbody>
 <tr>
 <td>ASR WER</td>
-<td>5130.77%</td>
+<td>5130,77%</td>
 </tr>
 <tr>
 <td>ASR CER</td>
-<td>5414.29%</td>
+<td>5414,29%</td>
 </tr>
 <tr>
 <td>MT BLEU (cascade)</td>
-<td>0.0000</td>
+<td>0,00</td>
 </tr>
 <tr>
 <td>MT chrF++ (cascade)</td>
-<td>0.3033</td>
+<td>0,30</td>
 </tr>
 <tr>
-<td>MT BLEU (oracle)</td>
-<td>25.0000</td>
+<td>MT BLEU (oracle từ transcript chuẩn)</td>
+<td>25,00</td>
 </tr>
 <tr>
 <td>RTF</td>
-<td>7.8038</td>
+<td>7,80</td>
 </tr>
 </tbody>
 </table>
-<h3>2.4. Bảng so sánh Paper vs Thực nghiệm</h3>
+<p><strong>Giải thích:</strong> WER &gt; 5000% do audio test là <strong>sine wave tổng hợp</strong>, không phải speech người → Whisper không nhận diện được từ nào. Kết quả này <strong>không đại diện</strong> cho năng lực thật của mô hình, chỉ xác nhận pipeline (load model → transcribe → dịch → tính metric) chạy đúng. Oracle BLEU = 25,00 (dịch từ transcript <strong>chuẩn</strong>) chứng minh MarianMT hoạt động tốt khi đầu vào đúng → lỗi hiện tại <strong>100% đến từ ASR</strong>.</p>
+<h4>(b) Fine-tune trên VIVOS thật (bộ quick, tập test 20 mẫu) — kết quả chính Giai đoạn 2</h4>
+<p>Nguồn: <code>outputs/quick/seed_42/test_metrics.json</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASR WER</td>
+<td><strong>50,52%</strong></td>
+</tr>
+<tr>
+<td>ASR CER</td>
+<td><strong>22,83%</strong></td>
+</tr>
+<tr>
+<td>MT BLEU (cascade)</td>
+<td><strong>4,83</strong></td>
+</tr>
+<tr>
+<td>MT chrF++ (cascade)</td>
+<td><strong>25,52</strong></td>
+</tr>
+<tr>
+<td>MT BLEU (oracle)</td>
+<td>100,00 (*)</td>
+</tr>
+<tr>
+<td>RTF</td>
+<td>0,23</td>
+</tr>
+<tr>
+<td>Thời gian xử lý / thời lượng audio</td>
+<td>16,49s / 72,97s</td>
+</tr>
+</tbody>
+</table>
+<p>(<em>) </em><em>Cảnh báo phương pháp:</em><em> oracle BLEU = 100 do nhãn EN của bộ quick được </em><em>sinh bởi chính MarianMT</em><em> → đây là phép so sánh vòng (circular), </em><em>không dùng được</em><em> để đánh giá chất lượng MT. Chỉ số có ý nghĩa là </em><em>cascade BLEU</em>* (dịch từ transcript ASR sinh ra). Hạn chế này được khai báo ở Mục 5.4.</p>
+<p><strong>Nhận xét:</strong></p>
+<ul>
+<li>Fine-tune trên audio thật giúp WER giảm từ "không hoạt động" (&gt;5000%) xuống <strong>50,52%</strong> — mức còn cao nhưng <strong>có ý nghĩa</strong> với chỉ 100 mẫu train.</li>
+<li>BLEU cascade 4,83 rất thấp → phần lớn do WER cao (lỗi ASR lan truyền sang MT). Đây chính là <strong>điểm yếu dẫn dắt Proposed Method</strong>.</li>
+</ul>
+<h3>2.4. Bảng so sánh Paper vs Thực nghiệm (bắt buộc)</h3>
 <table>
 <thead>
 <tr>
 <th>Hạng mục</th>
 <th>Paper công bố</th>
-<th>Thực nghiệm nhóm</th>
+<th>Thực nghiệm của nhóm</th>
 <th>Chênh lệch</th>
 <th>Ghi chú</th>
 </tr>
@@ -339,511 +634,620 @@ Source: 100% sample
 <tbody>
 <tr>
 <td>Dataset</td>
-<td>VIVOS (15 giờ)</td>
-<td>Synthetic (20 samples)</td>
-<td>N/A</td>
-<td>Data khác hoàn toàn</td>
+<td>VIVOS đầy đủ (~15 giờ, 65 speaker)</td>
+<td>VIVOS (10.887 mẫu) + bộ quick 140 mẫu cho thực nghiệm</td>
+<td>Ít hơn (thực nghiệm)</td>
+<td>Dùng đúng nguồn VIVOS, không dùng data khác</td>
 </tr>
 <tr>
-<td>Lượng data train (giờ)</td>
-<td>15</td>
-<td>0.012</td>
-<td>N/A</td>
-<td>Demo data</td>
+<td>Lượng dữ liệu train (giờ)</td>
+<td>~15</td>
+<td>~0,06 (100 mẫu quick)</td>
+<td>-99,6%</td>
+<td>Giới hạn VRAM 8GB</td>
 </tr>
 <tr>
 <td>Kiến trúc</td>
-<td>Whisper-small</td>
-<td>Whisper-small</td>
-<td>Giống</td>
-<td>Sử dụng cùng model</td>
+<td>Whisper-small (241M)</td>
+<td>Whisper-small fine-tune + MarianMT cascade</td>
+<td>+ ~77M</td>
+<td>Cascade cần thêm MT</td>
 </tr>
 <tr>
-<td>Tokenizer</td>
-<td>Whisper tokenizer</td>
-<td>Whisper tokenizer</td>
+<td>Tokenizer / vocab</td>
+<td>Whisper BPE 51.865</td>
+<td>Whisper BPE 51.865 / Marian SP</td>
 <td>Giống</td>
-<td></td>
+<td>Dùng tokenizer gốc</td>
 </tr>
 <tr>
-<td>Hyperparameter</td>
-<td>LR=1e-4, batch=16</td>
-<td>LR=1e-4, batch=4</td>
-<td>Tài nguyên hạn chế</td>
-<td>Giảm batch</td>
+<td>Hyper-parameter chính</td>
+<td>lr=1e-4, batch=256, nhiều epoch</td>
+<td>lr=1e-4, batch=2, grad-accum 4, 2 epochs</td>
+<td>Rút gọn</td>
+<td>Do tài nguyên</td>
+</tr>
+<tr>
+<td>Phần cứng &amp; thời gian train</td>
+<td>Multi-GPU, nhiều ngày</td>
+<td>1× GTX 1070 8GB, vài phút/lần</td>
+<td>Nhỏ hơn nhiều</td>
+<td>fp16 tắt</td>
 </tr>
 <tr>
 <td>WER (test)</td>
-<td>~25% (ước tính)</td>
-<td>5130.77%</td>
-<td>Rất lớn</td>
-<td>Data synthetic</td>
+<td>Không công bố riêng cho Whisper-small trên VIVOS (*)</td>
+<td>50,52% (baseline)</td>
+<td>Không xác định</td>
+<td>Tập test 20 mẫu</td>
 </tr>
 <tr>
-<td>BLEU (test)</td>
-<td>~30% (ước tính)</td>
-<td>0.0000</td>
-<td>Rất lớn</td>
-<td>ASR lỗi hoàn toàn</td>
+<td>CER (test)</td>
+<td>(*)</td>
+<td>22,83% (baseline)</td>
+<td>Không xác định</td>
+<td></td>
+</tr>
+<tr>
+<td>BLEU / chrF++ (cascade)</td>
+<td>(*)</td>
+<td>4,83 / 25,52</td>
+<td>Không xác định</td>
+<td>Lỗi ASR lan truyền</td>
 </tr>
 <tr>
 <td>RTF</td>
-<td>~0.05</td>
-<td>7.80</td>
-<td>Chậm</td>
-<td>GPU chưa tối ưu</td>
+<td>~0,1 (tham chiếu, mô hình lớn)</td>
+<td>0,23</td>
+<td>Chậm hơn</td>
+<td>GPU cũ, chưa tối ưu</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Lưu ý</strong>: Paper sử dụng audio thật (VIVOS), nhóm dùng synthetic data → không thể so sánh công bằng.</p>
-<h3>2.5. Gap Analysis</h3>
-<h4>Nguyên nhân chênh lệch</h4>
-<p><strong>1. Dữ liệu (Yếu tố chính)</strong><br />
-- <strong>Vấn đề</strong>: Dùng synthetic TTS data thay vì audio thật<br />
-- <strong>Kiểm chứng</strong>: Whisper pretrained hoạt động tốt trên audio thật, nhưng không recognize TTS audio<br />
-- <strong>Kết luận</strong>: Chênh lệch chủ yếu do domain mismatch</p>
-<p><strong>2. Lượng dữ liệu</strong><br />
-- <strong>Vấn đề</strong>: Chỉ 20 samples vs 15 giờ trong paper<br />
-- <strong>Kiểm chứng</strong>: Dữ liệu quá ít để học meaningful patterns<br />
-- <strong>Kết luận</strong>: Cần ít nhất vài giờ audio để fine-tune</p>
-<p><strong>3. Audio characteristics</strong><br />
-- <strong>Vấn đề</strong>: TTS audio có characteristics khác human speech<br />
-- <strong>Kiểm chứng</strong>: TTS audio thường quá perfect, thiếu biến thiên của natural speech<br />
-- <strong>Kết luận</strong>: Whisper được train trên natural speech, không generalize tốt sang TTS</p>
-<h4>Error Analysis</h4>
-<p><strong>Phân loại lỗi:</strong><br />
-- 100% lỗi là substitution/insertion/deletion → Whisper không recognize bất kỳ từ nào<br />
-- Không có lỗi dấu thanh (do không recognize được từ)<br />
-- Không có lỗi số/tên riêng (do không recognize được từ)</p>
-<p><strong>WER theo nhóm:</strong><br />
-- Gender: WER cao cả male và female (5130% vs 5130%)<br />
-- Speaker: Chỉ 1 speaker → không có phân tích<br />
-- Duration: WER cao trên tất cả (cùng độ dài 3s)</p>
-<p><strong>Lỗi lan truyền ASR → MT:</strong><br />
-- Oracle MT BLEU = 25% → MarianMT hoạt động tốt khi input đúng<br />
-- Cascade MT BLEU = 0% → Lỗi ASR lan truyền hoàn toàn<br />
-- Error propagation = 25 BLEU điểm</p>
-<h3>2.6. Điểm yếu baseline</h3>
-<ol>
-<li><strong>Không fine-tune trên tiếng Việt</strong> → Whisper zero-shot không hoạt động tốt trên domain lạ</li>
-<li><strong>Không có augmentation</strong> → Không robust với nhiễu</li>
-<li><strong>Greedy decode</strong> → Không optimal</li>
-<li><strong>Cascade pipeline</strong> → Lỗi lan truyền từ ASR sang MT</li>
-</ol>
-<h3>2.7. Sản phẩm Giai đoạn 2</h3>
+<p>(<em>) </em><em>Nguồn/điều kiện paper:</em><em> Paper Whisper gốc (Radford et al., 2022) </em><em>không công bố WER/BLEU riêng cho tiếng Việt hoặc cho Whisper-small trên VIVOS</em><em>. Nhóm </em><em>không đưa số "paper" cho các ô này để tránh sai lệch nguồn</em>*; thay vào đó so sánh nội bộ giữa các phiên bản trên cùng tập test.</p>
+<h3>2.5. Gap Analysis (có kiểm chứng)</h3>
+<table>
+<thead>
+<tr>
+<th>Nhóm nguyên nhân</th>
+<th>Nguyên nhân cụ thể</th>
+<th>Cách kiểm chứng (đã làm)</th>
+<th>Kết luận</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dữ liệu</strong></td>
+<td>Train chỉ 100 mẫu (~0,06h) vs 15h của VIVOS đầy đủ</td>
+<td>So sánh WER zero-shot (&gt;5000% trên synthetic) vs fine-tune (50,52% trên VIVOS)</td>
+<td>Dữ liệu là <strong>yếu tố chi phối</strong>; có audio thật + fine-tune đã giảm WER về mức có nghĩa</td>
+</tr>
+<tr>
+<td><strong>Dữ liệu (miền)</strong></td>
+<td>Nhãn EN do MarianMT sinh → nhãn nhiễu</td>
+<td>Oracle BLEU = 100 (vòng) → loại khỏi đánh giá</td>
+<td>Không dùng oracle BLEU để kết luận</td>
+</tr>
+<tr>
+<td><strong>Tiền xử lý &amp; chuẩn hoá</strong></td>
+<td>Chuẩn hoá text theo quy tắc riêng (NFC, lowercase, mở rộng viết tắt)</td>
+<td>Quy tắc áp dụng nhất quán train/dev/test</td>
+<td>Không phải nguồn chênh lệch chính</td>
+</tr>
+<tr>
+<td><strong>Mô hình &amp; huấn luyện</strong></td>
+<td>Batch 2, 2 epochs, fp16 tắt, chỉ 100 mẫu train</td>
+<td>Quan sát WER giảm đều qua các phiên bản (50,52 → 41,24) khi thêm LoRA/augment</td>
+<td>Thiếu epoch/batch làm giảm chất lượng; cần learning curve đầy đủ</td>
+</tr>
+<tr>
+<td><strong>Đánh giá</strong></td>
+<td>Test set quick 20 mẫu, dùng trực tiếp để lặp phiên bản</td>
+<td>Khai báo minh bạch (Mục 5.3)</td>
+<td><strong>Có nguy cơ overfit vào test</strong>; kết quả chỉ mang tính minh hoạ</td>
+</tr>
+<tr>
+<td><strong>Đặc thù tiếng Việt</strong></td>
+<td>Lỗi dấu thanh, từ đồng âm, từ mượn</td>
+<td><code>src/eval/error_analysis.py</code> phân loại S/D/I + lỗi dấu</td>
+<td>Có code phân tích; chưa chạy đủ sâu do thiếu nhân lực</td>
+</tr>
+</tbody>
+</table>
+<h3>2.6. Error Analysis của baseline</h3>
 <ul>
-<li>✅ Script eval_zero_shot.py</li>
-<li>✅ Bảng Paper vs Thực nghiệm</li>
-<li>✅ Gap Analysis</li>
-<li>✅ Error Analysis</li>
-<li>✅ Kết quả zero-shot baseline</li>
+<li><strong>Phân loại lỗi (S/D/I):</strong> cài đặt trong <code>src/eval/error_analysis.py</code> (substitution/deletion/insertion + lỗi dấu thanh + số + tên riêng + từ mượn).</li>
+<li><strong>Lỗi lan truyền ASR → MT (đo được):</strong> so sánh <code>mt_cascade.bleu</code> với <code>mt_oracle_from_ref.bleu</code>. Trên bộ quick, oracle bị vô hiệu (100, vòng) nên chỉ dùng <strong>cascade BLEU 4,83</strong> làm mốc. Kết luận: <strong>BLEU thấp chủ yếu do WER cao</strong>, tức lỗi ASR lan truyền gần như toàn bộ sang MT.</li>
+<li><strong>WER theo nhóm:</strong> chưa chạy đầy đủ theo gender/region/duration (hạn chế nhân lực) — ghi nhận là điểm cần bổ sung.</li>
+</ul>
+<h3>2.7. Điểm yếu ưu tiên cải thiện (cơ sở cho Proposed Method)</h3>
+<ol>
+<li><strong>WER còn cao (50,52%)</strong> → cần fine-tune hiệu quả hơn với ít tài nguyên ⇒ <strong>V2: LoRA + beam search</strong>.</li>
+<li><strong>BLEU cascade rất thấp (4,83)</strong> → lỗi ASR lan truyền ⇒ <strong>V3: noise-robust MT</strong> + <strong>V2: decode tốt hơn</strong>.</li>
+<li><strong>Thiếu robustness với nhiễu</strong> ⇒ <strong>V1: augmentation</strong>.</li>
+<li><strong>Kiến trúc cascade có thể bị error propagation</strong> ⇒ <strong>V4: so sánh end-to-end (negative control)</strong>.</li>
+</ol>
+<h3>2.8. Sản phẩm Giai đoạn 2</h3>
+<ul>
+<li><code>src/models/asr_whisper.py</code>, <code>src/models/mt_model.py</code>, <code>src/models/cascade.py</code></li>
+<li><code>src/train/train_asr.py</code>, <code>src/train/train_mt.py</code>, <code>src/train/run_version.py</code></li>
+<li><code>src/eval/metrics.py</code>, <code>src/eval/evaluate.py</code>, <code>src/eval/evaluate_e2e.py</code>, <code>src/eval/error_analysis.py</code></li>
+<li><code>scripts/eval_zero_shot.py</code></li>
+<li>Bảng <strong>Paper vs Thực nghiệm</strong> (<code>docs/paper_vs_experiment.xlsx</code>)</li>
+<li>Gap Analysis + Error Analysis (Mục 2.5, 2.6)</li>
 </ul>
 <hr />
-<h2>3. Giai đoạn 3 - Proposed Method</h2>
-<h3>3.1. Các phiên bản đề xuất</h3>
+<h2>3. Giai đoạn 3 - Thực nghiệm &amp; phát triển Proposed Method (V1 → V4)</h2>
+<h3>3.1. Quy trình lặp &amp; giả thuyết từng phiên bản</h3>
+<p>Mỗi phiên bản thay đổi <strong>một yếu tố chính</strong>, có giả thuyết - cấu hình - kết quả - kết luận:</p>
 <table>
 <thead>
 <tr>
 <th>Phiên bản</th>
-<th>Thay đổi chính</th>
-<th>Giả thuyết/Lý do</th>
+<th>Thay đổi chính (so với phiên bản trước)</th>
+<th>Giả thuyết / Lý do</th>
+<th>Config</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Baseline</td>
-<td>Whisper zero-shot + MarianMT cascade</td>
-<td>Baseline để so sánh</td>
+<td><strong>Baseline</strong></td>
+<td>Whisper-small fine-tune, <strong>không</strong> augment, <strong>greedy</strong></td>
+<td>Mốc so sánh, cấu hình tối giản</td>
+<td><code>configs/quick.yaml</code></td>
 </tr>
 <tr>
-<td>V1</td>
-<td>Thêm augmentation (speed, noise, reverb)</td>
-<td>Tăng robustness</td>
+<td><strong>V1</strong></td>
+<td><strong>+ Augmentation</strong> (speed perturbation, Gaussian noise, reverb) + speaker cap</td>
+<td>Tăng robustness với biến thiên giọng/nhiễu → giảm WER</td>
+<td><code>configs/v1_augment.yaml</code></td>
 </tr>
 <tr>
-<td>V2</td>
-<td>LoRA fine-tune + beam search</td>
-<td>Tính hiệu + decode tốt hơn</td>
+<td><strong>V2</strong></td>
+<td><strong>+ LoRA (r=16, alpha=32)</strong> + <strong>beam search (size 5)</strong> + length penalty (kèm augment)</td>
+<td>Fine-tune tham số hiệu quả với ít VRAM; beam search giảm lỗi decode</td>
+<td><code>configs/v2_lora.yaml</code></td>
 </tr>
 <tr>
-<td>V3</td>
-<td>Noise-robust MT (fine-tune trên noisy transcripts)</td>
-<td>Giảm lỗi lan truyền</td>
+<td><strong>V3</strong></td>
+<td><strong>+ Noise-robust MT</strong> (dùng transcript ASR nhiễu làm nguồn) + LoRA + beam</td>
+<td>MT chịu lỗi ASR tốt hơn → giảm error propagation, tăng BLEU</td>
+<td><code>configs/v3_noise_robust_mt.yaml</code></td>
 </tr>
 <tr>
-<td>V4</td>
-<td>End-to-end Whisper translation</td>
-<td>Đơn giản hóa pipeline</td>
+<td><strong>V4</strong></td>
+<td><strong>End-to-end</strong>: Whisper <code>task=translate</code> (VI→EN trực tiếp), bỏ MT</td>
+<td>Kiểm chứng giả thuyết E2E đơn giản hơn cascade mà vẫn hiệu quả? (đối chứng âm)</td>
+<td><code>configs/v4_e2e.yaml</code></td>
 </tr>
 </tbody>
 </table>
-<h3>3.2. Bảng tiến trình các phiên bản</h3>
-<p><strong>Lưu ý</strong>: Do hạn chế data và thời gian, các phiên bản V1-V4 <strong>chưa được thực nghiệm</strong>. Bảng dưới đây là <strong>kế hoạch đề xuất</strong> với dự đoán kết quả dựa trên literature.</p>
+<p>Cấu hình chung mọi phiên bản: 16 kHz, Log-Mel 80, batch 2, grad-accum 4, 2 epochs, early stopping patience 3, seed 42, fp16 tắt, beam size 5 (V2-V4).</p>
+<h3>3.2. Bảng tiến trình các phiên bản (bắt buộc) - SỐ LIỆU THẬT</h3>
+<p><strong>Đánh giá trên tập test 20 mẫu của bộ VIVOS quick</strong> (nguồn: <code>outputs/*/seed_42/test_metrics*.json</code>).</p>
 <table>
 <thead>
 <tr>
 <th>Phiên bản</th>
 <th>Thay đổi chính</th>
-<th>WER (dev)</th>
-<th>CER (dev)</th>
-<th>BLEU (dev)</th>
-<th>chrF++ (dev)</th>
-<th>RTF</th>
+<th>WER ↓</th>
+<th>CER ↓</th>
+<th>BLEU ↑</th>
+<th>chrF++ ↑</th>
+<th>RTF ↓</th>
+<th>Số tham số</th>
 <th>Kết luận</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Baseline</td>
-<td>Zero-shot</td>
-<td>5130.77</td>
-<td>5414.29</td>
-<td>0.00</td>
-<td>0.30</td>
-<td>7.80</td>
-<td>Data quá kém</td>
+<td>Fine-tune, không augment, greedy</td>
+<td>50,52</td>
+<td>22,83</td>
+<td>4,83</td>
+<td>25,52</td>
+<td>0,23</td>
+<td>241M + 77M</td>
+<td>Mốc tham chiếu trên audio thật</td>
 </tr>
 <tr>
 <td>V1</td>
-<td>Augmentation</td>
-<td>5100.00</td>
-<td>5380.00</td>
-<td>0.50</td>
-<td>0.35</td>
-<td>8.50</td>
-<td>Cải thiện nhỏ</td>
+<td>+ Augmentation</td>
+<td><em>(chưa ghi nhận)</em></td>
+<td><em>(chưa ghi nhận)</em></td>
+<td><em>(chưa ghi nhận)</em></td>
+<td><em>(chưa ghi nhận)</em></td>
+<td>-</td>
+<td>241M + 77M</td>
+<td>Đã huấn luyện, <strong>chưa chạy đánh giá</strong></td>
 </tr>
 <tr>
 <td>V2</td>
-<td>LoRA + Beam</td>
-<td>4800.00</td>
-<td>5100.00</td>
-<td>2.00</td>
-<td>0.50</td>
-<td>9.00</td>
-<td>Cải thiện rõ hơn</td>
+<td>+ LoRA + beam + augment</td>
+<td><strong>41,24</strong></td>
+<td><strong>16,05</strong></td>
+<td>22,01</td>
+<td>42,98</td>
+<td>0,27</td>
+<td>241M (~5M trainable) + 77M</td>
+<td><strong>WER tốt nhất</strong>, BLEU tăng ~4,6×</td>
 </tr>
 <tr>
 <td>V3</td>
-<td>Noise-robust MT</td>
-<td>4800.00</td>
-<td>5100.00</td>
-<td>3.00</td>
-<td>0.60</td>
-<td>9.50</td>
-<td>MT tốt hơn</td>
+<td>+ Noise-robust MT + LoRA + beam</td>
+<td>43,30</td>
+<td>16,88</td>
+<td><strong>22,73</strong></td>
+<td><strong>43,62</strong></td>
+<td>0,25</td>
+<td>241M (~5M trainable) + 77M</td>
+<td><strong>BLEU/chrF++ tốt nhất</strong> → phiên bản chọn</td>
 </tr>
 <tr>
 <td>V4</td>
-<td>E2E translate</td>
-<td>4700.00</td>
-<td>5000.00</td>
-<td>4.00</td>
-<td>0.70</td>
-<td>8.00</td>
-<td>Đơn giản hơn</td>
+<td>End-to-end translate</td>
+<td>-</td>
+<td>-</td>
+<td>4,23</td>
+<td>17,21</td>
+<td>0,18</td>
+<td>241M</td>
+<td><strong>Thất bại</strong>: kém cascade rõ rệt</td>
+</tr>
+<tr>
+<td><strong>Best</strong></td>
+<td><strong>V3</strong></td>
+<td>43,30</td>
+<td>16,88</td>
+<td><strong>22,73</strong></td>
+<td><strong>43,62</strong></td>
+<td>0,25</td>
+<td>241M + 77M</td>
+<td>Chọn để demo</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Kết quả trên test set (dự đoán):</strong><br />
-- Best: V4 với WER ~4700%, BLEU ~4.0%<br />
-- Lưu ý: Kết quả vẫn tệ do data synthetic</p>
-<h3>3.3. Ablation Study</h3>
-<p><strong>Dành cho phiên bản tốt nhất (V4):</strong></p>
+<p><strong>Phân tích:</strong></p>
+<ul>
+<li><strong>V2</strong> giảm WER mạnh nhất (50,52 → 41,24, tương đương <strong>-18,4% tương đối</strong>) và đưa BLEU từ 4,83 lên 22,01 (<strong>+356%</strong>). LoRA + beam + augmentation tỏ ra hiệu quả rõ rệt với ít epoch.</li>
+<li><strong>V3</strong> đạt BLEU/chrF++ cao nhất (22,73 / 43,62) nhưng WER <strong>nhích cao hơn</strong> V2 (43,30 vs 41,24). Chênh lệch BLEU giữa V3 và V2 chỉ <strong>+0,72 điểm</strong> → <strong>cải thiện nhỏ, CHƯA kiểm định ý nghĩa thống kê</strong> (chỉ 1 seed, n=20).</li>
+<li><strong>V4</strong> (E2E) chỉ đạt BLEU 4,23 — <strong>kém xa</strong> cascade (22,0-22,7) và ngang mức baseline kém nhất ⇒ trong điều kiện dữ liệu nhỏ, <strong>cascade ưu thế hơn end-to-end</strong>. Đây là <strong>kết quả âm tính có giá trị</strong> (minh chứng E2E cần nhiều dữ liệu hơn).</li>
+<li><strong>RTF:</strong> tất cả phiên bản cascade đều &lt; 1 (0,18-0,27) → <strong>đạt yêu cầu real-time</strong>; V4 nhanh nhất (0,18) do bỏ bước MT.</li>
+</ul>
+<h3>3.3. Ablation (mức độ có thể tách được)</h3>
+<p>Do hạn chế tài nguyên, nhóm <strong>chưa chạy ablation tách rời từng thành phần</strong> (chỉ có baseline vs V2/V3/V4 gộp nhiều thay đổi). Bảng dưới nêu <strong>đối chứng gián tiếp</strong> có bằng chứng:</p>
 <table>
 <thead>
 <tr>
-<th>Thành phần</th>
-<th>Bỏ thành phần</th>
+<th>Đối chứng</th>
+<th>So sánh</th>
 <th>WER</th>
 <th>BLEU</th>
-<th>Kết luận</th>
+<th>Suy luận (có kiểm soát)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Full V4</td>
-<td>-</td>
-<td>4700</td>
-<td>4.0</td>
-<td>Best</td>
+<td>Cascade vs E2E</td>
+<td>V2/V3 (cascade) vs V4 (E2E)</td>
+<td>41,24-43,30 vs -</td>
+<td>22,0-22,7 vs 4,23</td>
+<td><strong>Kiến trúc cascade quan trọng hơn</strong> trong điều kiện dữ liệu nhỏ</td>
 </tr>
 <tr>
-<td>- Augmentation</td>
-<td>Không augment</td>
-<td>4800</td>
-<td>3.5</td>
-<td>Quan trọng</td>
+<td>+ LoRA + beam + augment</td>
+<td>Baseline vs V2</td>
+<td>50,52 → 41,24</td>
+<td>4,83 → 22,01</td>
+<td>Gói cải tiến cấp decode/model <strong>có tác dụng lớn</strong></td>
 </tr>
 <tr>
-<td>- LoRA</td>
-<td>Full fine-tune</td>
-<td>4750</td>
-<td>3.8</td>
-<td>Ít quan trọng</td>
-</tr>
-<tr>
-<td>- Beam search</td>
-<td>Greedy</td>
-<td>4850</td>
-<td>3.0</td>
-<td>Quan trọng</td>
+<td>+ Noise-robust MT</td>
+<td>V2 vs V3</td>
+<td>41,24 → 43,30</td>
+<td>22,01 → 22,73</td>
+<td>MT chịu nhiễu <strong>cải thiện BLEU rất nhỏ</strong> (trong biên độ nhiễu)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Lưu ý</strong>: Đây là <strong>dự đoán</strong> dựa trên literature, chưa có thực nghiệm.</p>
-<h3>3.4. Kết luận tính khả thi</h3>
-<p><strong>Trả lời RQ (Research Questions):</strong></p>
-<ol>
-<li>
-<p><strong>RQ1: Augmentation có cải thiện không?</strong><br />
-   - Trả lời: <strong>Chưa đủ bằng chứng</strong> (chưa thực nghiệm)<br />
-   - Dự đoán: Có cải thiện nhỏ nhưng không đáng kể với data synthetic</p>
-</li>
-<li>
-<p><strong>RQ2: LoRA có hiệu quả không?</strong><br />
-   - Trả lời: <strong>Chưa đủ bằng chứng</strong> (chưa thực nghiệm)<br />
-   - Dự đoán: Có, giúp giảm memory và training time</p>
-</li>
-<li>
-<p><strong>RQ3: Noise-robust MT có giảm lỗi lan truyền không?</strong><br />
-   - Trả lời: <strong>Chưa đủ bằng chứng</strong> (chưa thực nghiệm)<br />
-   - Dự đoán: Có, nhưng cần đủ noisy data để train</p>
-</li>
-<li>
-<p><strong>RQ4: E2E có tốt hơn cascade không?</strong><br />
-   - Trả lời: <strong>Chưa đủ bằng chứng</strong> (chưa thực nghiệm)<br />
-   - Dự đoán: Đơn giản hơn, có thể hiệu suất tương đương</p>
-</li>
-</ol>
-<p><strong>Hạn chế:</strong><br />
-- Kết quả dự đoán, chưa có thực nghiệm<br />
-- Data synthetic không phản ánh thực tế<br />
-- Không có evaluation trên audio thật<br />
-- Không có out-of-domain testing</p>
-<p><strong>Khả thi triển khai:</strong><br />
-- Pipeline code đã hoàn chỉnh<br />
-- Config cho từng phiên bản đã có<br />
-- Cần data thật (VIVOS) để thực nghiệm thực tế<br />
-- Với GPU RTX 3090, training baseline mất ~2-3 giờ</p>
-<h3>3.5. Sản phẩm Giai đoạn 3</h3>
+<blockquote>
+<p><strong>Trung thực về ablation:</strong> vì V2 gộp cả LoRA + beam + augmentation, <strong>không thể khẳng định yếu tố nào đóng góp bao nhiêu</strong>; đây là hạn chế (Mục 5.2) cần bổ sung bằng cách chạy từng thành phần riêng.</p>
+</blockquote>
+<h3>3.4. Kiểm định &amp; phân tích bổ sung</h3>
 <ul>
-<li>✅ Config cho V1, V2, V3, V4</li>
-<li>✅ Bảng tiến trình phiên bản (dự đoán)</li>
-<li>✅ Ablation study (dự đoán)</li>
-<li>✅ Kết luận tính khả thi</li>
-<li>⏳ Training thực tế (cần data thật)</li>
+<li><strong>Số seed:</strong> chỉ chạy <strong>seed 42</strong> (do giới hạn thời gian GPU). <strong>Chưa có trung bình ± độ lệch chuẩn</strong>; các khác biệt nhỏ (V2 vs V3) chưa được kiểm định (thiếu bootstrap/paired test) → <strong>thừa nhận không chắc chắn</strong>.</li>
+<li><strong>Chi phí - lợi ích:</strong> V2/V3 hơn baseline ~9 điểm WER và ~17 điểm BLEU, đổi lại RTF tăng nhẹ (0,23 → 0,25-0,27) — vẫn &lt; 1 nên chi phí chấp nhận được.</li>
+</ul>
+<h3>3.5. Kết luận tính khả thi (trả lời RQ bằng số liệu)</h3>
+<table>
+<thead>
+<tr>
+<th>RQ</th>
+<th>Câu hỏi</th>
+<th>Trả lời</th>
+<th>Bằng chứng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RQ1</strong></td>
+<td>Augmentation có cải thiện không?</td>
+<td><strong>Chưa đủ bằng chứng</strong></td>
+<td>V1 đã huấn luyện nhưng <strong>chưa có metric đánh giá</strong>; V2 (có augment) tốt hơn baseline nhưng gộp nhiều thay đổi</td>
+</tr>
+<tr>
+<td><strong>RQ2</strong></td>
+<td>LoRA có hiệu quả không?</td>
+<td><strong>Ủng hộ (một phần)</strong></td>
+<td>V2 (LoRA): WER 50,52 → 41,24; BLEU 4,83 → 22,01 so với baseline</td>
+</tr>
+<tr>
+<td><strong>RQ3</strong></td>
+<td>Noise-robust MT có giảm lỗi lan truyền không?</td>
+<td><strong>Ủng hộ yếu / chưa đủ bằng chứng</strong></td>
+<td>V3 BLEU 22,73 (nhích hơn V2 22,01, +0,72) nhưng WER cao hơn; <strong>không có ý nghĩa thống kê đã kiểm định</strong></td>
+</tr>
+<tr>
+<td><strong>RQ4</strong></td>
+<td>E2E có tốt hơn cascade không?</td>
+<td><strong>Không ủng hộ</strong></td>
+<td>V4 BLEU 4,23 &lt;&lt; cascade 22,01-22,73</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cải tiến đến từ đâu?</strong> Chủ yếu từ <strong>gói (LoRA + beam search + augmentation)</strong> ở nhánh ASR/decode; MT noise-robust chỉ cải thiện biên.</p>
+<p><strong>Hạn chế / khi nào không khả thi:</strong></p>
+<ul>
+<li>Dữ liệu huấn luyện quá nhỏ (100 mẫu) → WER còn &gt;40%, <strong>chưa đạt mức dùng thật</strong>.</li>
+<li>Chỉ có giọng <strong>miền Bắc</strong> → không đảm bảo với giọng Nam/Trung (miền ngoài dữ liệu).</li>
+<li>E2E chưa khả thi ở quy mô dữ liệu này.</li>
+</ul>
+<p><strong>Khả thi triển khai thực tế:</strong> phiên bản cascade <strong>V3</strong> có RTF 0,25 (&lt; 1) → <strong>đáp ứng real-time</strong> trên GPU phổ thông; bộ nhớ vừa (241M + 77M). ⇒ <strong>Chọn V3 cho demo ở Task 3</strong>.</p>
+<p><strong>Phiên bản thất bại (V4):</strong> đã báo cáo và giải thích — E2E cần nhiều dữ liệu + fine-tune kỹ hơn; kết quả âm tính này giúp loại bỏ hướng E2E ở giai đoạn hiện tại.</p>
+<h3>3.6. Sản phẩm Giai đoạn 3</h3>
+<ul>
+<li>Config từng phiên bản: <code>configs/{v1_augment,v2_lora,v3_noise_robust_mt,v4_e2e}.yaml</code></li>
+<li>Bảng tiến trình phiên bản: <code>docs/version_progress.xlsx</code></li>
+<li>Checkpoint: <code>outputs/{v2_quick,v3_quick,v4_quick}/seed_42/best/</code></li>
+<li>Metric JSON: <code>outputs/*/seed_42/test_metrics*.json</code></li>
+<li>Kết luận tính khả thi: Mục 3.5</li>
 </ul>
 <hr />
 <h2>4. Tổng kết</h2>
-<h3>4.1. Đã hoàn thành</h3>
+<h3>4.1. Kết quả đạt được</h3>
 <ol>
-<li>
-<p>✅ <strong>Giai đoạn 1</strong>: Dataset Pipeline<br />
-   - Pipeline code hoàn chỉnh<br />
-   - Data card và thống kê<br />
-   - Script tái lập được</p>
-</li>
-<li>
-<p>✅ <strong>Giai đoạn 2</strong>: Baseline Reproduction<br />
-   - Zero-shot evaluation<br />
-   - Bảng Paper vs Thực nghiệm<br />
-   - Gap Analysis chi tiết<br />
-   - Error Analysis</p>
-</li>
-<li>
-<p>✅ <strong>Giai đoạn 3</strong>: Proposed Method (Kế hoạch)<br />
-   - Config cho V1-V4<br />
-   - Bảng tiến trình (dự đoán)<br />
-   - Ablation study (dự đoán)<br />
-   - Kết luận tính khả thi</p>
-</li>
+<li><strong>Giai đoạn 1 (Dataset Pipeline):</strong> pipeline 12 bước tái lập được trên VIVOS thật; bộ dữ liệu cuối <strong>10.887 mẫu</strong> (train 8.253 / dev 1.084 / test 1.550), chống rò rỉ theo speaker, có Data Card + EDA + bảng mất cân bằng trước/sau.</li>
+<li><strong>Giai đoạn 2 (Baseline):</strong> tái dựng baseline Whisper-small + MarianMT cascade; có bảng <strong>Paper vs Thực nghiệm</strong>, Gap Analysis và Error Analysis; xác định điểm yếu dẫn dắt cải tiến.</li>
+<li><strong>Giai đoạn 3 (Proposed):</strong> thực nghiệm <strong>V1→V4</strong> trên audio thật; <strong>V2</strong> giảm WER tốt nhất, <strong>V3</strong> đạt BLEU/chrF++ tốt nhất, <strong>V4</strong> thất bại (đối chứng âm).</li>
 </ol>
-<h3>4.2. Chưa hoàn thành (do hạn chế)</h3>
+<h3>4.2. Bảng điểm tự đánh giá theo rubric</h3>
+<table>
+<thead>
+<tr>
+<th>Hạng mục</th>
+<th>Điểm tối đa</th>
+<th>Tự đánh giá</th>
+<th>Cơ sở</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GĐ1 - Dataset pipeline</td>
+<td>2,5</td>
+<td>2,0</td>
+<td>Sạch/chuẩn hoá/rò rỉ/tái lập đạt; cân bằng chỉ đạt một phần (không thể cân bằng vùng miền)</td>
+</tr>
+<tr>
+<td>GĐ2 - Baseline &amp; Gap</td>
+<td>2,5</td>
+<td>2,0</td>
+<td>Có bảng Paper vs Thực nghiệm + Gap Analysis; error analysis chưa sâu hết các nhóm</td>
+</tr>
+<tr>
+<td>GĐ3 - Proposed V1…Vn</td>
+<td>3,5</td>
+<td>2,0</td>
+<td>Có 4 phiên bản + số liệu thật; thiếu ablation tách rời + nhiều seed</td>
+</tr>
+<tr>
+<td>Kết luận &amp; khả thi</td>
+<td>0,5</td>
+<td>0,5</td>
+<td>Trả lời RQ bằng số liệu, chọn V3</td>
+</tr>
+<tr>
+<td>Chất lượng kỹ thuật &amp; tái lập</td>
+<td>0,5</td>
+<td>0,5</td>
+<td>Code + config + seed + log + README</td>
+</tr>
+<tr>
+<td>Trình bày &amp; hỏi đáp</td>
+<td>0,5</td>
+<td>-</td>
+<td>Chưa chấm</td>
+</tr>
+</tbody>
+</table>
+<h3>4.3. Việc cần làm tiếp (để nâng điểm)</h3>
 <ol>
-<li>⏳ Training baseline với data thật</li>
-<li>⏳ Training V1-V4 với data thật</li>
-<li>⏳ Kết quả thực nghiệm (hiện tại chỉ có dự đoán)</li>
-<li>⏳ Evaluation trên audio thật</li>
-</ol>
-<h3>4.3. Giải thích hạn chế</h3>
-<p><strong>Tại sao kết quả tệ?</strong><br />
-- Dùng synthetic TTS data thay vì audio thật<br />
-- Whisper pretrained không recognize TTS audio<br />
-- Chỉ 20 samples, quá ít để training<br />
-- Chỉ 1 speaker, không có diversity</p>
-<p><strong>Nếu có data thật (VIVOS):</strong><br />
-- Whisper fine-tune trên VIVOS → WER ~25-30%<br />
-- MarianMT cascade → BLEU ~30-35%<br />
-- Kết quả tương đương với paper</p>
-<p><strong>Pipeline đã đúng:</strong><br />
-- Code structure đúng yêu cầu<br />
-- Các bước xử lý data đúng quy trình<br />
-- Config cho từng phiên bản đã có<br />
-- Chỉ thiếu data thật để thực nghiệm</p>
-<h3>4.4. Đề xuất cải thiện</h3>
-<ol>
-<li><strong>Convert VIVOS</strong> → Thêm bản dịch EN</li>
-<li><strong>Chạy pipeline trên VIVOS</strong> → Có data thật</li>
-<li><strong>Train baseline</strong> → Fine-tune Whisper</li>
-<li><strong>Thực nghiệm V1-V4</strong> → Có kết quả thực tế</li>
-<li><strong>Error analysis sâu</strong> → Phân loại lỗi tiếng Việt</li>
+<li>Huấn luyện trên <strong>VIVOS đầy đủ</strong> (8.253 train) thay vì bộ quick.</li>
+<li>Chạy <strong>≥ 3 seed</strong> cho baseline/V2/V3, báo cáo <strong>trung bình ± std</strong>.</li>
+<li><strong>Ablation tách rời</strong> từng thành phần (LoRA / beam / augment / noise-robust MT).</li>
+<li><strong>Error analysis sâu</strong> theo gender/region/duration + phân loại lỗi dấu thanh.</li>
+<li><strong>Đánh giá out-of-domain</strong> (giọng Nam/Trung, nhiễu, hội thoại).</li>
+<li>Sinh <strong>learning curve</strong> (loss/WER theo epoch) và biểu đồ so sánh phiên bản.</li>
 </ol>
 <hr />
-<h2>5. Tài liệu tham khảo</h2>
+<h2>5. Hạn chế (khai báo minh bạch)</h2>
+<h3>5.1. Hạn chế tài nguyên</h3>
+<p>Chỉ có 1 GPU GTX 1070 (8GB) → batch rất nhỏ (2), 2 epochs, fp16 tắt, chỉ chạy 1 seed.</p>
+<h3>5.2. Hạn chế thực nghiệm</h3>
+<ul>
+<li><strong>Chưa ablation tách rời</strong> → không cô lập được đóng góp từng yếu tố.</li>
+<li><strong>Chỉ 1 seed</strong> → không có std, chưa kiểm định ý nghĩa thống kê.</li>
+<li>Huấn luyện/đánh giá trên <strong>bộ quick (140 mẫu)</strong> thay vì dataset đầy đủ.</li>
+</ul>
+<h3>5.3. Hạn chế phương pháp đánh giá (quan trọng)</h3>
+<p>Các phiên bản quick được <strong>đánh giá trực tiếp trên tập test 20 mẫu</strong> dùng để lặp phiên bản → <strong>có nguy cơ overfit vào test</strong> (vi phạm nguyên tắc "test chỉ chạy cho phiên bản chốt"). Kết quả do đó <strong>chỉ mang tính minh hoạ</strong>, không nên xem là ước lượng khách quan cho dataset đầy đủ.</p>
+<h3>5.4. Hạn chế nhãn EN</h3>
+<p>Nhãn EN của bộ quick do <strong>MarianMT sinh</strong> → <strong>oracle BLEU bị vô hiệu (vòng)</strong>. Chỉ số <strong>cascade BLEU</strong> mới có ý nghĩa; kết quả có thể lạc quan hơn so với nhãn EN do người dịch.</p>
+<h3>5.5. Hạn chế dữ liệu</h3>
+<p>VIVOS <strong>100% giọng miền Bắc</strong> → model có thể kém trên giọng Nam/Trung; chưa có tập OOD để kiểm chứng.</p>
+<hr />
+<h2>6. Tài liệu tham khảo</h2>
 <ol>
-<li>Radford, A., et al. (2022). "Robust Speech Recognition via Large-Scale Weak Supervision". OpenAI.</li>
-<li>MarianMT: "Helsinki-NLP/opus-mt-vi-en" on HuggingFace</li>
+<li>Radford, A., et al. (2022). <em>Robust Speech Recognition via Large-Scale Weak Supervision</em>. OpenAI.</li>
+<li>Luong, H.-T., &amp; Vu, H.-Q. (2016). <em>A non-expert Kaldi recipe for Vietnamese Speech Recognition System</em>. WLSI/OIAF4HLT 2016.</li>
+<li>Tiedemann, J., &amp; Thottingal, S. (2020). <em>OPUS-MT — Building massively parallel multilingual machine translation models</em>. EMNLP 2020.</li>
 <li>VIVOS Dataset: https://zenodo.org/record/7068130</li>
-<li>Task 2 Requirements Document</li>
+<li>HuggingFace: <code>openai/whisper-small</code>, <code>Helsinki-NLP/opus-mt-vi-en</code>.</li>
+<li>Tài liệu yêu cầu Task 2 (Project description).</li>
 </ol>
 <hr />
-<h2>Phụ lục</h2>
-<h3>A. Cấu trúc thư mục</h3>
+<h2>Phụ lục A. Cấu trúc thư mục</h2>
 <pre><code>asr_vi_en_task2/
+├── README.md
+├── requirements.txt
 ├── configs/
 │   ├── baseline.yaml
+│   ├── quick.yaml
 │   ├── v1_augment.yaml
 │   ├── v2_lora.yaml
 │   ├── v3_noise_robust_mt.yaml
 │   └── v4_e2e.yaml
 ├── src/
-│   ├── data/
-│   │   ├── prepare_data.py
-│   │   ├── text_normalize.py
-│   │   └── ...
-│   ├── models/
-│   │   ├── asr_whisper.py
-│   │   ├── mt_model.py
-│   │   └── cascade.py
-│   ├── train/
-│   │   ├── train_asr.py
-│   │   ├── train_mt.py
-│   │   └── run_version.py
-│   ├── eval/
-│   │   ├── metrics.py
-│   │   ├── evaluate.py
-│   │   └── error_analysis.py
-│   └── utils/
-│       ├── config.py
-│       ├── seed.py
-│       └── logger.py
-├── scripts/
-│   ├── eval_zero_shot.py
-│   ├── convert_vivos_format.py
-│   └── ...
+│   ├── data/      (prepare_data, text_normalize, align_check, translation_check,
+│   │               dedup, imbalance, split, augment, features)
+│   ├── models/    (asr_whisper, mt_model, cascade)
+│   ├── train/     (train_asr, train_mt, train_e2e, run_version)
+│   ├── eval/      (metrics, evaluate, evaluate_e2e, error_analysis)
+│   └── utils/     (config, seed, logger)
+├── scripts/       (download_vivos_hf, convert_vivos_format, create_quick_dataset,
+│                   csv_to_excel, md_to_html, open_print_dialog, ...)
+├── notebooks/eda.ipynb
 ├── data/
-│   ├── manifests/
-│   │   ├── train.jsonl
-│   │   ├── dev.jsonl
-│   │   ├── test.jsonl
-│   │   └── data_card.md
+│   ├── manifests/ (train/dev/test.jsonl, *_quick.jsonl, data_card.md, pipeline_report.json)
+│   ├── data_card.md, imbalance_analysis.md
 │   └── raw/
-├── outputs/
-│   └── zero_shot_baseline.json
-└── docs/
-    ├── TASK2_REPORT.md
-    └── baseline_report.md
+├── outputs/       (metric JSON + checkpoint các phiên bản)
+└── docs/          (TASK2_REPORT.md/html, experiment_log.md, team_contributions.md,
+                    baseline_selection.md, TRAINING_GUIDE.md,
+                    paper_vs_experiment.{csv,xlsx}, version_progress.{csv,xlsx})
 </code></pre>
-<h3>B. Lệnh chạy</h3>
-<pre><code class="language-bash"># Install dependencies
+<h2>Phụ lục B. Lệnh tái lập</h2>
+<pre><code class="language-bash"># 1. Cài đặt
 pip install -r requirements.txt
 
-# Prepare data
+# 2. Tải VIVOS + chuẩn hoá format
+python scripts/download_vivos_hf.py --output_dir data/raw/vietnamese/vivos
+python scripts/convert_vivos_format.py
+
+# 3. Pipeline dữ liệu
 python -m src.data.prepare_data --config configs/baseline.yaml
 
-# Zero-shot evaluation
-python scripts/eval_zero_shot.py --manifest data/manifests/test.jsonl --out outputs/zero_shot_baseline.json
+# 4. Tạo bộ quick + dịch EN (để thí nghiệm nhanh)
+python scripts/create_quick_dataset.py
 
-# Train baseline (cần data thật)
+# 5. Chạy các phiên bản
 python -m src.train.run_version --version baseline
+python -m src.train.run_version --version v2_lora
+python -m src.train.run_version --version v3_noise_robust_mt
+python -m src.train.run_version --version v4_e2e
 
-# Train all versions (cần data thật)
-python -m src.train.run_version --version all
+# 6. Xuất bảng kết quả
+python scripts/csv_to_excel.py docs/paper_vs_experiment.csv
+python scripts/csv_to_excel.py docs/version_progress.csv
+
+# 7. Sinh HTML báo cáo (mở browser → Ctrl+P → Save as PDF)
+python scripts/md_to_html.py docs/TASK2_REPORT.md
 </code></pre>
-<h3>C. Nhật ký thực nghiệm</h3>
-<p>Xem chi tiết tại: <code>docs/experiment_log.md</code></p>
+<h2>Phụ lục C. Nhật ký thực nghiệm</h2>
 <table>
 <thead>
 <tr>
 <th>Ngày</th>
 <th>Phiên bản</th>
 <th>Cấu hình</th>
-<th>Kết quả</th>
+<th>Kết quả (test quick, n=20)</th>
 <th>Nhận xét</th>
+<th>Trạng thái</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>2026-10-20</td>
-<td>Baseline zero-shot</td>
-<td>Whisper-small, no fine-tune</td>
-<td>WER=5130%, BLEU=0%</td>
-<td>Data synthetic → kết quả tệ</td>
+<td>Zero-shot (synthetic)</td>
+<td>Whisper-small pretrained + MarianMT, 4 mẫu sine</td>
+<td>WER 5130,77 · CER 5414,29 · BLEU 0,00 · chrF++ 0,30 · RTF 7,80</td>
+<td>Audio tổng hợp → không nhận diện được; chỉ kiểm chứng pipeline</td>
+<td>Hoàn thành</td>
 </tr>
 <tr>
-<td>-</td>
-<td>V1</td>
-<td>Augmentation</td>
-<td>-</td>
-<td>Chưa chạy</td>
+<td>2026-10-20</td>
+<td>Baseline (VIVOS quick)</td>
+<td>Whisper-small, không augment, greedy, 2 epochs</td>
+<td>WER 50,52 · CER 22,83 · BLEU 4,83 · chrF++ 25,52 · RTF 0,23</td>
+<td>Mốc tham chiếu trên audio thật</td>
+<td>Hoàn thành</td>
 </tr>
 <tr>
-<td>-</td>
-<td>V2</td>
-<td>LoRA + Beam</td>
-<td>-</td>
-<td>Chưa chạy</td>
+<td>2026-10-20</td>
+<td>V1 (Augmentation)</td>
+<td>+ speed/noise/reverb, speaker cap</td>
+<td><em>(chưa ghi nhận metric)</em></td>
+<td>Đã huấn luyện, chưa chạy đánh giá</td>
+<td>Một phần</td>
 </tr>
 <tr>
-<td>-</td>
-<td>V3</td>
-<td>Noise-robust MT</td>
-<td>-</td>
-<td>Chưa chạy</td>
+<td>2026-10-20</td>
+<td>V2 (LoRA + Beam)</td>
+<td>LoRA r=16 α=32 + beam=5 + augment, lr 5e-5</td>
+<td>WER <strong>41,24</strong> · CER 16,05 · BLEU 22,01 · chrF++ 42,98 · RTF 0,27</td>
+<td>WER tốt nhất</td>
+<td>Hoàn thành</td>
 </tr>
 <tr>
-<td>-</td>
-<td>V4</td>
-<td>E2E translate</td>
-<td>-</td>
-<td>Chưa chạy</td>
+<td>2026-10-20</td>
+<td>V3 (Noise-robust MT)</td>
+<td>+ MT chịu nhiễu, LoRA + beam, lr 3e-5</td>
+<td>WER 43,30 · CER 16,88 · BLEU <strong>22,73</strong> · chrF++ <strong>43,62</strong> · RTF 0,25</td>
+<td>BLEU cao nhất → chọn demo</td>
+<td>Hoàn thành</td>
+</tr>
+<tr>
+<td>2026-10-20</td>
+<td>V4 (E2E translate)</td>
+<td>Whisper task=translate, beam=5, augment</td>
+<td>BLEU 4,23 · chrF++ 17,21 · RTF 0,18</td>
+<td>Kém cascade rõ rệt</td>
+<td>Hoàn thành</td>
 </tr>
 </tbody>
 </table>
-<h3>D. Bảng phân công</h3>
+<p>Chi tiết đầy đủ: <code>docs/experiment_log.md</code>.</p>
+<h2>Phụ lục D. Bảng phân công &amp; đóng góp</h2>
 <table>
 <thead>
 <tr>
 <th>Thành viên</th>
+<th>MSSV</th>
 <th>Phần phụ trách</th>
 <th>Đóng góp</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>[Tên 1]</td>
-<td>Pipeline data, prepare_data.py</td>
-<td>30%</td>
-</tr>
-<tr>
-<td>[Tên 2]</td>
-<td>Baseline, Whisper integration</td>
-<td>30%</td>
-</tr>
-<tr>
-<td>[Tên 3]</td>
-<td>MT model, cascade pipeline</td>
-<td>20%</td>
-</tr>
-<tr>
-<td>[Tên 4]</td>
-<td>Evaluation, metrics, báo cáo</td>
-<td>20%</td>
+<td>Nguyễn Đức Mạnh</td>
+<td>SE194525</td>
+<td>Toàn bộ: Dataset Pipeline, Baseline Reproduction, Proposed Method (V1-V4), Evaluation, Báo cáo &amp; bảng kết quả</td>
+<td>100%</td>
 </tr>
 </tbody>
 </table>
+<p>Chi tiết: <code>docs/team_contributions.md</code>.</p>
 <hr />
-<p><strong>Kết thúc báo cáo</strong></p>
+<p><strong>Kết thúc báo cáo.</strong></p>
 </body>
 </html>

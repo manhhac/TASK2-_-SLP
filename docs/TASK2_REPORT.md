@@ -3,6 +3,7 @@
 **Thành viên:** Nguyễn Đức Mạnh
 **MSSV:** SE194525
 **Ngày nộp:** 2026-10-20
+**GitHub:** https://github.com/manhhac/Task-2---SLP
 
 ---
 

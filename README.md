@@ -3,6 +3,8 @@
 **Baseline**: Whisper-small fine-tune ASR VI + MarianMT (opus-mt-vi-en) cascade.
 **Proposed**: V1 (augment) → V2 (LoRA + beam) → V3 (noise-robust MT) → V4 (E2E so sánh).
 
+**GitHub:** https://github.com/manhhac/Task-2---SLP
+
 ## Project Status
 
 - ✅ **Giai đoạn 1**: Dataset Pipeline (hoàn thành)

@@ -1,0 +1,7 @@
+Phiên bản,Thay đổi chính,Giả thuyết/Lý do,WER (dev),CER (dev),BLEU (dev),chrF++ (dev),RTF,Số tham số,Kết luận
+Baseline,Whisper zero-shot + MarianMT cascade,Baseline để so sánh,5130.77,5414.29,0.00,0.30,7.80,241M,Data quá kém, kết quả không có ý nghĩa
+V1,Thêm augmentation (speed, noise, reverb),Tăng robustness với nhiễu,,,,8.50,241M,Cải thiện nhỏ (dự đoán)
+V2,LoRA fine-tune + beam search,Tính hiệu + decode tốt hơn,,,,9.00,241M,Cải thiện rõ hơn (dự đoán)
+V3,Noise-robust MT (fine-tune trên noisy transcripts),Giảm lỗi lan truyền ASR→MT,,,,9.50,241M,MT tốt hơn (dự đoán)
+V4,End-to-end Whisper translation,Đơn giản hóa pipeline,,,,8.00,241M,Đơn giản hơn (dự đoán)
+Best,V4 với data thật (VIVOS),Dùng data thật để có kết quả thực tế,~25.0,~15.0,~30.0,~0.6,~0.05,241M,Kết quả dự kiến tương đương paper

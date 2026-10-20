@@ -1,0 +1,22 @@
+Hạng mục,Paper công bố,Thực nghiệm nhóm,Chênh lệch,Ghi chú
+Dataset,VIVOS (15 giờ),Synthetic (20 samples),N/A,Data khác hoàn toàn
+Lượng data train (giờ),15,0.012,N/A,Demo data quá ít
+Kiến trúc,Whisper-small,Whisper-small,Giống,Sử dụng cùng model
+Số tham số Whisper,241M,241M,Giống,
+Tokenizer,Whisper tokenizer,Whisper tokenizer,Giống,
+Hyperparameter LR,1e-4,1e-4,Giống,
+Hyperparameter batch,16,4,Tài nguyên hạn chế,Giảm batch do memory
+Gradient accumulation,?,8,Tài nguyên hạn chế,
+Epochs,?,10,Dự đoán,
+Phần cứng,RTX 3090,CUDA,Tương tự,
+Thời gian train,~2-3 giờ,?,Chưa train với data thật,
+WER (dev),~25% (ước tính),5130.77%,Rất lớn,Data synthetic
+WER (test),~25% (ước tính),5130.77%,Rất lớn,Data synthetic
+CER (dev),~15% (ước tính),5414.29%,Rất lớn,Data synthetic
+CER (test),~15% (ước tính),5414.29%,Rất lớn,Data synthetic
+BLEU (dev),~30% (ước tính),0.0000,Rất lớn,ASR lỗi hoàn toàn
+BLEU (test),~30% (ước tính),0.0000,Rất lớn,ASR lỗi hoàn toàn
+chrF++ (dev),~0.6 (ước tính),0.3033,Rất lớn,ASR lỗi hoàn toàn
+chrF++ (test),~0.6 (ước tính),0.3033,Rất lớn,ASR lỗi hoàn toàn
+RTF,~0.05,7.80,Chậm,GPU chưa tối ưu
+Latency (ms),~50,?,Chưa đo,

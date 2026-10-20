@@ -1,0 +1,220 @@
+{
+  "n_total": 10,
+  "splits": {
+    "train": 3,
+    "dev": 3,
+    "test": 4
+  },
+  "rejects": {},
+  "stats_before": {
+    "language": {
+      "vi": 10
+    },
+    "source": {
+      "sample": 10
+    },
+    "gender": {
+      "male": 5,
+      "female": 5
+    },
+    "region": {
+      "north": 10
+    },
+    "duration_bins": {
+      "(0, 3]": 10,
+      "(3, 5]": 0,
+      "(5, 10]": 0,
+      "(10, 20]": 0,
+      "(20, 30]": 0
+    },
+    "top_tokens": [
+      [
+        "xin",
+        2
+      ],
+      [
+        "cảm",
+        2
+      ],
+      [
+        "ơn",
+        2
+      ],
+      [
+        "tôi",
+        2
+      ],
+      [
+        "là",
+        2
+      ],
+      [
+        "chào",
+        1
+      ],
+      [
+        "tên",
+        1
+      ],
+      [
+        "hôm",
+        1
+      ],
+      [
+        "nay",
+        1
+      ],
+      [
+        "thứ",
+        1
+      ],
+      [
+        "hai",
+        1
+      ],
+      [
+        "trời",
+        1
+      ],
+      [
+        "đẹp",
+        1
+      ],
+      [
+        "quá",
+        1
+      ],
+      [
+        "thích",
+        1
+      ],
+      [
+        "học",
+        1
+      ],
+      [
+        "tiếng",
+        1
+      ],
+      [
+        "anh",
+        1
+      ],
+      [
+        "lỗi",
+        1
+      ],
+      [
+        "tạm",
+        1
+      ]
+    ],
+    "n_unique_tokens": 28
+  },
+  "stats_after": {
+    "language": {
+      "vi": 10
+    },
+    "source": {
+      "sample": 10
+    },
+    "gender": {
+      "male": 5,
+      "female": 5
+    },
+    "region": {
+      "north": 10
+    },
+    "duration_bins": {
+      "(0, 3]": 10,
+      "(3, 5]": 0,
+      "(5, 10]": 0,
+      "(10, 20]": 0,
+      "(20, 30]": 0
+    },
+    "top_tokens": [
+      [
+        "tôi",
+        2
+      ],
+      [
+        "là",
+        2
+      ],
+      [
+        "xin",
+        2
+      ],
+      [
+        "cảm",
+        2
+      ],
+      [
+        "ơn",
+        2
+      ],
+      [
+        "tên",
+        1
+      ],
+      [
+        "thích",
+        1
+      ],
+      [
+        "học",
+        1
+      ],
+      [
+        "tiếng",
+        1
+      ],
+      [
+        "anh",
+        1
+      ],
+      [
+        "chúc",
+        1
+      ],
+      [
+        "một",
+        1
+      ],
+      [
+        "ngày",
+        1
+      ],
+      [
+        "tốt",
+        1
+      ],
+      [
+        "lành",
+        1
+      ],
+      [
+        "chào",
+        1
+      ],
+      [
+        "hôm",
+        1
+      ],
+      [
+        "nay",
+        1
+      ],
+      [
+        "thứ",
+        1
+      ],
+      [
+        "hai",
+        1
+      ]
+    ],
+    "n_unique_tokens": 28
+  },
+  "normalization_rules": "\nQUY TẮC CHUẨN HOÁ VĂN BẢN (áp dụng nhất quán cho train/dev/test):\n1. Unicode NFC (quan trọng với tiếng Việt: tổ hợp dấu thanh)\n2. Lowercase toàn bộ\n3. Loại bỏ ký tự điều khiển, ký tự lạ không thuộc bảng chữ Việt/ASCII\n4. Số: mặc định tách từng chữ số; có thể bật number_to_words để đọc thành lời\n5. Mở rộng từ viết tắt phổ biến (tp., q., p., vn, hcm, ...)\n6. Chuẩn hoá khoảng trắng (1 space), strip 2 đầu\n7. Gộp dấu câu lặp (!!! → !, ... → .)\n8. Dấu câu giữ lại: . , ! ? ; : ' \" ( ) -\n"
+}

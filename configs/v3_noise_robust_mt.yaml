@@ -1,0 +1,46 @@
+version: v3_noise_robust_mt
+description: "V3: fine-tune MT trên ASR transcript nhiễu (noise-robust MT)."
+data:
+  raw_dirs: ["data/raw/vietnamese", "data/raw/english"]
+  manifest_dir: "data/manifests"
+  feature_dir: "data/features"
+  sample_rate: 16000
+  min_dur: 0.5
+  max_dur: 30.0
+  min_rms: 0.005
+  clip_threshold: 0.99
+  clip_ratio_max: 0.20
+  max_chars_per_sec: 25.0
+  min_chars_per_sec: 2.0
+  train_ratio: 0.70
+  dev_ratio: 0.15
+  test_ratio: 0.15
+  seed: 42
+  n_mels: 80
+  tokenizer_vocab: 8000
+model:
+  asr_model: "openai/whisper-small"
+  mt_model: "Helsinki-NLP/opus-mt-vi-en"
+  use_lora: true
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  lora_target_modules: ["q_proj", "v_proj", "k_proj", "out_proj", "fc1", "fc2"]
+train:
+  output_dir: "outputs/v3"
+  num_epochs: 5
+  batch_size: 32
+  grad_accum: 2
+  lr: 3.0e-5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  fp16: true
+  eval_steps: 500
+  save_steps: 500
+  logging_steps: 50
+  patience: 3
+  seeds: [42, 123, 2024]
+  use_augment: true
+  use_beam_search: true
+  beam_size: 5
+  use_lm_fusion: false

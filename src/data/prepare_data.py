@@ -207,9 +207,13 @@ def apply_imbalance_fixes(df, cfg):
     others = df[df.split != "train"].copy()
 
     # (a) speaker cap — tránh 1 speaker chiếm quá nhiều
+    # Lưu ý: KHÔNG dùng groupby().apply() ở đây vì pandas >= 2.2 coi nhóm
+    # là cột group key và loại bỏ "speaker_id" khỏi kết quả (NaN sau concat).
+    # Thay bằng shuffle + head(cap) theo từng nhóm — giữ nguyên mọi cột.
     cap = int(train.groupby("speaker_id").size().median() * 3)
-    train = (train.groupby("speaker_id", group_keys=False)
-                  .apply(lambda g: g.sample(min(len(g), cap), random_state=cfg.seed)))
+    train = (train.sample(frac=1.0, random_state=cfg.seed)
+                  .groupby("speaker_id", group_keys=False)
+                  .head(cap))
 
     # (b) oversample language minority (augment flag)
     vc = train["language"].value_counts()
@@ -366,7 +370,8 @@ def write_data_card(df, report, path):
              "## Hạn chế / thiên lệch đã biết",
              "- Domain mismatch giữa nguồn đọc sách và hội thoại",
              "- Thiếu test OOD (giọng vùng miền chưa có)",
-             "- Tỉ lệ EN/VI vẫn lệch sau cân bằng (đã cap, oversample)",
+             "- VIVOS chỉ có tiếng Việt: kỹ thuật oversample ngôn ngữ thiểu số không kích hoạt",
+             "- Speaker cap (median×3) cao hơn speaker nhiều mẫu nhất nên không cắt mẫu nào",
              ]
     path.write_text("\n".join(lines), encoding="utf-8")
 

@@ -1,126 +1,110 @@
 # Báo cáo Phân tích Mất Cân bằng & Tác động Xử lý
 
+> Số liệu trong tài liệu này đo trực tiếp từ `data/raw/vietnamese/vivos/transcripts.tsv`
+> (raw) và `data/manifests/{train,dev,test}.jsonl` (sau xử lý). Không dùng số ước lượng.
+
 ## 1. Thống kê Trước Xử lý (Raw VIVOS)
 
 ### 1.1 Tổng quan
 
 | Đặc tính | Train | Test | Tổng |
 |----------|-------|------|------|
-| Số mẫu | 11,660 | 760 | 12,420 |
-| Số giờ | 14:55 | 00:45 | 15:40 |
+| Số mẫu | 11.660 | 760 | 12.420 |
 | Số speaker | 46 | 19 | 65 |
 | Giới tính (Nam/Nữ) | 22/24 | 12/7 | 34/31 |
 
-### 1.2 Phân bố theo Speaker
+### 1.2 Phân bố theo Speaker (đo từ transcripts.tsv)
 
 | Thống kê | Giá trị |
 |----------|---------|
-| Trung bình mẫu/speaker | 191.1 |
-| Median mẫu/speaker | 148 |
-| Min mẫu/speaker | 15 |
-| Max mẫu/speaker | 512 |
-| Std deviation | 127.3 |
+| Trung bình mẫu/speaker | 191,1 |
+| Median mẫu/speaker | 250 |
+| Min mẫu/speaker | 40 |
+| Max mẫu/speaker | 300 |
+| Std deviation | 107,3 |
 
-**Phân tích**:
-- Có sự chênh lệch lớn giữa speakers (min 15, max 512)
-- Một số speakers chiếm quá nhiều dữ liệu (max/speaker ÷ min/speaker ≈ 34x)
-- Có thể gây overfitting vào speakers có nhiều mẫu
+**Phân tích:**
+- Chênh lệch giữa speaker ít nhất và nhiều nhất là 40 → 300 mẫu (≈ 7,5×).
+- Phần lớn speaker có 200–300 mẫu; nhóm 19 speaker thuộc tập dev/test chỉ có 34–40 mẫu.
 
-### 1.3 Phân bố theo Độ dài Câu
+### 1.3 Phân bố theo Độ dài Câu (sau làm sạch, 10.887 mẫu)
 
 | Bin (giây) | Số mẫu | Tỉ lệ |
 |-------------|--------|-------|
-| 0-3s | ~1,200 | ~9.7% |
-| 3-5s | ~3,500 | ~28.2% |
-| 5-10s | ~5,800 | ~46.7% |
-| 10-20s | ~1,800 | ~14.5% |
-| 20-30s | ~120 | ~1.0% |
+| (0, 3] | 2.264 | 20,8% |
+| (3, 5] | 5.054 | 46,4% |
+| (5, 10] | 3.163 | 29,1% |
+| (10, 20] | 406 | 3,7% |
+| (20, 30] | 0 | 0% |
 
-**Phân tích**:
-- Đa số câu tập trung ở 3-10s (75%)
-- Có sự mất cân bằng nhẹ ở câu quá ngắn (<3s) và quá dài (>20s)
-- Cần dynamic batching để xử lý hiệu quả
+**Phân tích:**
+- Đa số câu tập trung ở 3–5s và 5–10s (75,5%).
+- Không có câu > 20s → không cần lo ngại câu quá dài.
 
-### 1.4 Phân bố Token Frequency
+### 1.4 Phân bố Token Frequency (sau làm sạch)
 
 | Thống kê | Giá trị |
 |----------|---------|
-| Tổng số token duy nhất | 4,617 (âm tiết) |
-| Top 10 token chiếm | ~35% |
-| Top 100 token chiếm | ~60% |
-| Token hiếm (<10 lần) | ~1,200 (~26%) |
+| Tổng token | 150.100 |
+| Token duy nhất (âm tiết) | 4.940 |
+| Top 10 token chiếm | 10,2% |
+| Token hiếm (< 10 lần) | 3.257 (65,9% số token duy nhất) |
 
-**Phân tích**:
-- Có lượng lớn token hiếm (26%)
-- Có thể cần oversample các mẫu chứa token hiếm
-- Hoặc sử dụng subword tokenization để giảm token hiếm
+**Phân tích:**
+- Phân bố long-tail rõ: 65,9% token duy nhất xuất hiện < 10 lần.
+- Nên dùng subword tokenization (Whisper BPE) để giảm ảnh hưởng token hiếm.
 
 ## 2. Kỹ thuật Xử lý Mất Cân bằng Áp dụng
 
 ### 2.1 Speaker Cap
 
-**Công thức**: `cap = median × 3 = 148 × 3 = 444`
+**Công thức** (trong `src/data/prepare_data.py::apply_imbalance_fixes`):
+`cap = median(số mẫu/speaker trên tập train) × 3 = 200 × 3 = 600`
 
-**Logic**:
-- Giới hạn mỗi speaker tối đa 444 mẫu
-- Nếu speaker có > 444 mẫu, random sample xuống 444
-- Giảm overfitting vào speakers chiếm nhiều
+**Logic:**
+- Mỗi speaker giữ tối đa 600 mẫu; speaker nào vượt cap sẽ random sample xuống ngưỡng.
+- Mục đích: giảm overfitting vào speaker có nhiều mẫu.
 
-**Kết quả dự kiến**:
-- Speakers > 444 mẫu: từ ~5 speakers xuống 444
-- Tổng mẫu giảm: ~200-300 mẫu (~2%)
-- Phân bổ speaker đều hơn
+**Kết quả thực đo:**
+- Speaker nhiều mẫu nhất trong tập train = 300 (< 600).
+- → **0 speaker bị cap, 0 mẫu bị loại.**
 
 ### 2.2 Oversample Minority Language
 
-**Logic**:
-- Target: 85% so với ngôn ngữ chiếm đa số
-- Nếu tiếng Việt chiếm đa số, oversample tiếng Anh (nếu có)
-- Trong VIVOS: 100% tiếng Việt → không cần oversample
+**Logic:** nếu tập train có ≥ 2 ngôn ngữ, oversample ngôn ngữ ít mẫu lên 85% ngôn ngữ đa số.
 
-**Kết quả**:
-- Không áp dụng cho VIVOS (chỉ có tiếng Việt)
-- Có thể áp dụng nếu thêm dữ liệu tiếng Anh
+**Kết quả thực đo:**
+- VIVOS 100% tiếng Việt → điều kiện `len(value_counts) >= 2` **không thoả** → kỹ thuật không kích hoạt.
 
 ## 3. Thống kê Sau Xử lý
 
 ### 3.1 Tổng quan
 
-| Đặc tính | Trước | Sau | Thay đổi |
-|----------|-------|-----|----------|
-| Tổng mẫu | 12,420 | ~12,200 | -200 (~-1.6%) |
+| Đặc tính | Trước cap | Sau cap | Thay đổi |
+|----------|-----------|---------|----------|
+| Tổng mẫu (sau làm sạch + dedup) | 10.887 | 10.887 | 0 |
 | Số speaker | 65 | 65 | 0 |
-| Trung bình mẫu/speaker | 191.1 | ~187.7 | -3.4 |
-| Median mẫu/speaker | 148 | 148 | 0 |
-| Min mẫu/speaker | 15 | 15 | 0 |
-| Max mẫu/speaker | 512 | 444 | -68 (-13.3%) |
+| Trung bình mẫu/speaker | 167,5 | 167,5 | 0 |
+| Median mẫu/speaker | 200 | 200 | 0 |
+| Min mẫu/speaker | 34 | 34 | 0 |
+| Max mẫu/speaker | 300 | 300 | 0 |
 
 ### 3.2 Phân bố Speaker Sau Cap
 
 | Thống kê | Trước | Sau | Thay đổi |
 |----------|-------|-----|----------|
-| Std deviation | 127.3 | ~95.2 | -32.1 (-25.2%) |
-| Speakers bị cap | 5 | 5 | - |
-| Tổng mẫu bị loại | ~200 | ~200 | - |
+| Std deviation | 97,1 | 97,1 | 0 |
+| Speakers bị cap | 0 | 0 | - |
+| Tổng mẫu bị loại | 0 | 0 | - |
 
-**Phân tích**:
-- Std deviation giảm 25% → phân bổ đều hơn
-- 5 speakers bị cap (512 → 444)
-- Mất ~200 mẫu (~1.6%) - chấp nhận được
+**Phân tích trung thực:** Với VIVOS, ngưỡng cap (600) cao hơn hẳn speaker nhiều mẫu nhất (300)
+nên kỹ thuật **không tạo khác biệt đo được**. Giá trị thực của Giai đoạn 1 nằm ở khâu làm sạch:
+loại 1.524 mẫu trùng lặp (MD5 audio/text), lọc 9 mẫu lỗi (5 silent + 4 alignment),
+và chia tập theo speaker chống rò rỉ (train 47 / dev 9 / test 9 speaker).
 
 ### 3.3 Phân bố theo Độ dài
 
-| Bin (giây) | Trước | Sau | Thay đổi |
-|-------------|-------|-----|----------|
-| 0-3s | ~1,200 | ~1,180 | -20 |
-| 3-5s | ~3,500 | ~3,450 | -50 |
-| 5-10s | ~5,800 | ~5,720 | -80 |
-| 10-20s | ~1,800 | ~1,780 | -20 |
-| 20-30s | ~120 | ~120 | 0 |
-
-**Phân tích**:
-- Phân bố độ dài không thay đổi đáng kể
-- Speaker cap không ảnh hưởng phân bố độ dài
+Không thay đổi (cap không cắt mẫu nào) → giữ nguyên như Mục 1.3.
 
 ## 4. Bảng So sánh Tác động Xử lý
 
@@ -128,119 +112,63 @@
 
 | Metric | Không Cap | Có Cap | Δ |
 |--------|-----------|--------|---|
-| Tổng mẫu | 12,420 | 12,200 | -200 (-1.6%) |
-| Std dev (samples/speaker) | 127.3 | 95.2 | -32.1 (-25.2%) |
-| Max samples/speaker | 512 | 444 | -68 (-13.3%) |
-| Số speaker bị ảnh hưởng | 0 | 5 | +5 |
+| Tổng mẫu | 10.887 | 10.887 | 0 |
+| Std dev (samples/speaker) | 97,1 | 97,1 | 0 |
+| Max samples/speaker | 300 | 300 | 0 |
+| Số speaker bị ảnh hưởng | 0 | 0 | 0 |
 
-**Kết luận**:
-- Speaker cap giảm std dev 25% → phân bổ đều hơn
-- Chỉ mất 1.6% mẫu → chấp nhận được
-- Cải thiện robustness qua speaker
+**Kết luận:** Speaker cap đã được cài đặt và chạy, nhưng **không tác động** trên VIVOS do
+ngưỡng cap quá cao. Đã ghi nhận trung thực thay vì báo cáo cải thiện không có thật.
 
-### 4.2 So sánh Oversample (nếu có)
+### 4.2 So sánh Oversample
 
 | Metric | Không Oversample | Có Oversample | Δ |
 |--------|-----------------|---------------|---|
-| (Chưa áp dụng cho VIVOS) | - | - | - |
+| - | Không áp dụng cho VIVOS (một ngôn ngữ) | - | - |
 
-## 5. Đánh giá Tác động (Mô hình nhỏ)
+## 5. Đánh giá Tác động
 
 ### 5.1 Thử nghiệm kiểm chứng
 
-**Thiết lập**:
-- Mô hình: Whisper-tiny (small model để test nhanh)
-- Dữ liệu: 10% subset VIVOS
-- Metric: WER
+Các phiên bản V1→V4 trong `docs/version_progress.csv` không tách riêng biến "cap bật/tắt",
+nên **không có bằng chứng thực nghiệm** rằng cap cải thiện WER trên bộ này. Không đưa ra
+con số cải thiện giả định.
 
-### 5.2 Kết quả (Dự kiến)
+### 5.2 Kết luận về tái lấy mẫu
 
-| Phiên bản | WER (dev) | WER (test) | Δ vs No-Cap |
-|----------|-----------|------------|-------------|
-| Không cap | 15.2% | 16.8% | - |
-| Có cap | 14.8% | 16.3% | -0.4% / -0.5% |
-
-**Phân tích**:
-- Cải thiện nhẹ (~0.4-0.5% WER)
-- Speaker cap có tác động tích cực
-- Kết quả hợp lý với giả thuyết
-
-### 5.3 Chạy thực tế (sẽ cập nhật)
-
-Sau khi chạy baseline full, sẽ cập nhật kết quả thực tế.
+- Speaker cap: không tác động (0 mẫu bị loại).
+- Oversample minority language: không kích hoạt (đơn ngữ).
+- Hai hạn chế không thể khắc phục bằng tái lấy mẫu: vùng miền 100% Bắc và độ dài câu.
 
 ## 6. Kết luận & Khuyến nghị
 
-### 6.1 Kết luận
-
-1. **Speaker cap**:
-   - Giảm std dev 25% → phân bổ speaker đều hơn
-   - Chỉ mất 1.6% mẫu → chi phí thấp
-   - Cải thiện WER nhẹ (~0.4-0.5%)
-   - **Nên áp dụng**
-
-2. **Oversample minority language**:
-   - Không áp dụng cho VIVOS (chỉ có tiếng Việt)
-   - Nếu thêm dữ liệu tiếng Anh → nên áp dụng
-
-3. **Tác động tổng thể**:
-   - Cải thiện robustness qua speaker
-   - Không ảnh hưởng phân bố độ dài
-   - Chi phí thấp (1.6% mẫu)
-
-### 6.2 Khuyến nghị
-
-1. **Giữ speaker cap**:
-   - Median × 3 là lựa chọn hợp lý
-   - Có thể điều chỉnh (×2 hoặc ×4) nếu cần
-
-2. **Thêm kỹ thuật khác** (nếu cần):
-   - Bucketing theo độ dài (dynamic batching)
-   - Oversample mẫu chứa token hiếm
-   - Augmentation cho speakers ít mẫu
-
-3. **Monitor**:
-   - Theo dõi WER theo speaker
-   - Theo dõi WER theo độ dài
-   - Kiểm tra overfitting vào speakers
+1. **Speaker cap**: giữ cấu hình, nhưng với VIVOS nên hạ ngưỡng (ví dụ `median × 1,2 ≈ 240`)
+   nếu thực sự muốn tác động tới các speaker nhiều mẫu.
+2. **Oversample**: chỉ hữu ích khi bổ sung dữ liệu ngôn ngữ thứ hai.
+3. **Giá trị thật của Giai đoạn 1**: dedup (1.524 mẫu), lọc lỗi (9 mẫu), chuẩn hoá NFC,
+   chia tập theo speaker chống rò rỉ.
 
 ## 7. Bảng Tóm tắt Giai đoạn 1
 
 | Hạng mục | Trước xử lý | Sau xử lý | Trạng thái |
 |----------|------------|-----------|------------|
-| Sạch (audio quality) | 100% (đã lọc) | 100% | ✓ |
-| Chuẩn hoá văn bản | - | Unicode NFC, lowercase, expand abbreviations | ✓ |
-| Cân bằng speaker | Std dev 127.3 | Std dev 95.2 (-25%) | ✓ |
-| Không rò rỉ | - | Speaker-based split | ✓ |
-| Tái lập | - | Seed 42, config versioning | ✓ |
+| Sạch (audio quality) | 12.420 | 12.411 (loại 5 silent + 4 alignment) | Đạt |
+| Loại trùng lặp | 12.411 | 10.887 (loại 1.524) | Đạt |
+| Chuẩn hoá văn bản | - | Unicode NFC, lowercase, expand abbreviations | Đạt |
+| Cân bằng speaker (cap) | std 97,1 | std 97,1 (không cắt mẫu) | Không tác động |
+| Không rò rỉ | - | Chia theo speaker (47/9/9) | Đạt |
+| Tái lập | - | Seed 42, config versioning | Đạt |
 
 ## 8. Hạn chế & Cải tiến Tương lai
 
 ### 8.1 Hạn chế hiện tại
 
-1. **VIVOS chỉ có tiếng Việt**:
-   - Không có bilingual data
-   - Phụ thuộc vào MarianMT cho translation
-
-2. **Giọng miền Bắc chiếm đa số**:
-   - Thiếu giọng miền Nam/Nam Trung
-   - Có thể bias về giọng miền Bắc
-
-3. **Read speech**:
-   - Dữ liệu đọc sách, không hội thoại tự nhiên
-   - Có thể không general tốt sang conversational domain
+1. **VIVOS chỉ có tiếng Việt**: không có dữ liệu song ngữ; phụ thuộc MarianMT để tạo nhãn EN.
+2. **100% giọng miền Bắc**: thiếu giọng miền Nam/Nam Trung → nguy cơ bias vùng miền.
+3. **Read speech**: dữ liệu đọc sách, không phải hội thoại tự nhiên.
 
 ### 8.2 Cải tiến tương lai
 
-1. **Thêm dữ liệu**:
-   - Mozilla Common Voice Vietnamese
-   - Dữ liệu tự thu (đa giọng)
-
-2. **Cải thiện kỹ thuật**:
-   - Dynamic batching theo độ dài
-   - Oversample token hiếm
-   - Pseudo-labeling cho giọng khó
-
-3. **Validation**:
-   - Chạy baseline trên dữ liệu mới
-   - So sánh với VIVOS-only
+1. **Thêm dữ liệu**: Mozilla Common Voice Vietnamese, dữ liệu tự thu đa giọng.
+2. **Kỹ thuật**: dynamic batching theo độ dài, oversample token hiếm, pseudo-labeling.
+3. **Validate**: chạy baseline trên dữ liệu mới và so sánh với VIVOS-only.

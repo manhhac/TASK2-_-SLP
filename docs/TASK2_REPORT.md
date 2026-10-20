@@ -118,26 +118,27 @@ Tài liệu quy tắc: `data/manifests/data_card.md` (Mục 2.2).
 **Kỹ thuật 1 - Speaker cap (giới hạn số mẫu mỗi người nói):**
 
 - Công thức: `cap = median(số mẫu/speaker) × 3`.
-- Mục đích: giảm overfitting vào các speaker có nhiều mẫu.
-- Tác động: độ lệch chuẩn phân bố speaker giảm (~127,3 → ~95,2 theo `data/imbalance_analysis.md`), hi sinh ~1,6% tổng số mẫu.
+- Trên VIVOS: median = 200 mẫu/speaker → `cap = 600`.
+- **Kết quả thực đo:** speaker nhiều mẫu nhất chỉ có 300 mẫu (< 600) → **không speaker nào vượt cap, 0 mẫu bị loại**. Đây là số liệu trung thực thay cho giả định "giảm ~25% độ lệch chuẩn".
 
-**Kỹ thuật 2 - Oversample nhóm thiểu số:**
+**Kỹ thuật 2 - Oversample nhóm ngôn ngữ thiểu số:**
 
-- Mục tiêu đưa nhóm thiểu số lên ~85% nhóm đa số.
-- Với VIVOS (100% tiếng Việt) → không có nhóm ngôn ngữ thiểu số để oversample; kỹ thuật này **không tác động** trên VIVOS và được ghi nhận rõ là không đổi kết quả.
+- Chỉ kích hoạt khi tập train có ≥ 2 ngôn ngữ.
+- VIVOS 100% tiếng Việt → kỹ thuật này **không kích hoạt** trên bộ dữ liệu này (được ghi nhận rõ, không tô hồng kết quả).
 
-**Bảng trước/sau (nguồn `data/imbalance_analysis.md`):**
+**Bảng trước/sau (nguồn `data/manifests/pipeline_report.json`):**
 
 | Đặc tính | Trước xử lý | Sau xử lý | Thay đổi |
 |----------|-------------|-----------|----------|
-| Tổng mẫu | 12.420 | ~12.200 | -200 (~-1,6%) |
+| Tổng mẫu (sau làm sạch + dedup) | 10.887 | 10.887 | 0 |
 | Số speaker | 65 | 65 | 0 |
-| Trung bình mẫu/speaker | 191,1 | ~187,7 | -3,4 |
-| Median mẫu/speaker | 148 | 148 | 0 |
-| Max mẫu/speaker | 512 | 444 | -68 (-13,3%) |
-| Std deviation | 127,3 | ~95,2 | -32,1 (-25,2%) |
+| Trung bình mẫu/speaker | 167,5 | 167,5 | 0 |
+| Median mẫu/speaker | 200 | 200 | 0 |
+| Min mẫu/speaker | 34 | 34 | 0 |
+| Max mẫu/speaker | 300 | 300 | 0 |
+| Std mẫu/speaker | 97,1 | 97,1 | 0 |
 
-**Nhận xét tác động:** Speaker cap làm phân bố đều hơn rõ rệt (std giảm ~25%) với chi phí dữ liệu rất nhỏ (~1,6%) → chấp nhận được. Hai hạn chế **không thể khắc phục** bằng kỹ thuật tái lấy mẫu: (i) vùng miền 100% Bắc và (ii) fluidity độ dài câu — vì VIVOS không có mẫu Nam/Trung. Đây là lý do hợp lý vì sao không thể cân bằng hơn.
+**Nhận xét tác động (trung thực):** Hai kỹ thuật tái lấy mẫu **không tạo khác biệt đo được** trên VIVOS vì (i) cap (600) cao hơn hẳn speaker nhiều mẫu nhất (300) và (ii) dữ liệu chỉ có một ngôn ngữ. Giá trị thực của Giai đoạn 1 nằm ở các bước làm sạch dữ liệu: loại **1.524 mẫu trùng lặp** (MD5 audio/text), lọc **9 mẫu lỗi** (5 silent + 4 alignment fail), chuẩn hoá Unicode NFC, và **chia tập theo speaker chống rò rỉ** (train 47 / dev 9 / test 9 speaker — không speaker nào xuất hiện ở hai tập). Hai hạn chế **không thể khắc phục** bằng tái lấy mẫu là (i) vùng miền 100% Bắc và (ii) phân bố độ dài câu — vì VIVOS không có mẫu Nam/Trung.
 
 ### 1.6. Tái lập
 

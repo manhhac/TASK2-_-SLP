@@ -1,7 +1,11 @@
 # Data Card — Task 2 ASR VI + MT EN
 
 ## Nguồn & giấy phép
-Xem `configs/*.yaml` và `report['sources']`.
+- **Bộ dữ liệu**: VIVOS (Vietnamese Speech Corpus) — AILAB, VNUHCM-University of Science.
+- **Link tải**: https://zenodo.org/record/7068130
+- **Giấy phép**: CC BY-NC-SA 4.0 (chỉ dùng học thuật, phi thương mại).
+- **Script tái lập**: `python -m src.data.prepare_data --config configs/baseline.yaml`
+- **Manifest**: `data/manifests/{train,dev,test}.jsonl` (mỗi dòng 1 mẫu: id, audio_path, duration, text_vi, text_en, speaker_id, gender, region, source, split, hash).
 
 ## Quy trình xử lý
 
@@ -17,8 +21,11 @@ QUY TẮC CHUẨN HOÁ VĂN BẢN (áp dụng nhất quán cho train/dev/test):
 
 
 ## Thống kê
-- Tổng mẫu: 10887
+- Tổng mẫu: 10887 (sau làm sạch + dedup; raw VIVOS 12.420)
 - Splits: {'train': 8253, 'dev': 1084, 'test': 1550}
+- Số speaker: 65 (train 47 / dev 9 / test 9 — không speaker nào lặp giữa các split)
+- Mẫu/speaker: trung bình 167,5 | median 200 | min 34 | max 300 | std 97,1
+- Giới tính: nữ 6.407 (58,8%) / nam 4.480 (41,2%); vùng: 100% miền Bắc
 
 ## Mất cân bằng trước xử lý
 ```json
@@ -369,4 +376,7 @@ QUY TẮC CHUẨN HOÁ VĂN BẢN (áp dụng nhất quán cho train/dev/test):
 ## Hạn chế / thiên lệch đã biết
 - Domain mismatch giữa nguồn đọc sách và hội thoại
 - Thiếu test OOD (giọng vùng miền chưa có)
-- Tỉ lệ EN/VI vẫn lệch sau cân bằng (đã cap, oversample)
+- VIVOS chỉ có tiếng Việt: kỹ thuật oversample ngôn ngữ thiểu số không kích hoạt
+- Speaker cap (median×3 = 600) cao hơn speaker nhiều mẫu nhất (300) nên không cắt mẫu nào
+- Vùng miền 100% miền Bắc; không có giọng Nam/Trung
+- `text_en` để trống (ASR-only); nhãn EN cho MT sinh bằng MarianMT → rủi ro overfit, xem báo cáo

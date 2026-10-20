@@ -158,14 +158,14 @@ Manifests (train/dev/test.jsonl)
 ### 2.8 Xử lý mất cân bằng
 
 #### 2.8.1 Speaker cap
-- **Công thức**: cap = median × 3
-- Giới hạn số mẫu mỗi speaker
-- Tránh speaker chiếm quá nhiều
+- **Công thức**: cap = median × 3 = 200 × 3 = 600
+- Giới hạn số mẫu mỗi speaker, tránh speaker chiếm quá nhiều
+- **Kết quả thực đo trên VIVOS**: speaker nhiều mẫu nhất chỉ 300 (< 600) → **không cắt mẫu nào**
 
 #### 2.8.2 Oversample minority language
 - **Target**: 85% so với ngôn ngữ chiếm đa số
-- Oversample ngôn ngữ ít mẫu hơn
-- Đánh dấu `is_augmented = True`
+- Oversample ngôn ngữ ít mẫu hơn, đánh dấu `is_augmented = True`
+- **Kết quả thực đo trên VIVOS**: 100% tiếng Việt → **không kích hoạt**
 
 ### 2.9 Chia tập dữ liệu
 
@@ -217,30 +217,32 @@ Manifests (train/dev/test.jsonl)
 
 ### 3.2 Sau xử lý (Final Dataset)
 
-| Split | Số mẫu | Số giờ | Số speaker |
-|-------|--------|--------|------------|
-| Train | ~8,200 | ~10:00 | ~45 |
-| Dev | ~1,750 | ~2:00 | ~10 |
-| Test | ~1,750 | ~2:00 | ~10 |
+| Split | Số mẫu | Số speaker |
+|-------|--------|------------|
+| Train | 8.253 | 47 |
+| Dev | 1.084 | 9 |
+| Test | 1.550 | 9 |
+| **Tổng** | **10.887** | **65** |
 
-*(Số liệu dự kiến, sẽ cập nhật sau khi chạy pipeline)*
+*Nguồn: `data/manifests/pipeline_report.json`. Raw VIVOS 12.420 → loại 1.524 trùng lặp + 9 mẫu lỗi (5 silent, 4 alignment) = 10.887. Không speaker nào lặp giữa các split.*
 
 ### 3.3 Phân bổ theo speaker
 
-- **Speaker cap**: median × 3
-- **Speaker range**: min ~50, max ~573 mẫu
+- **Speaker cap**: median × 3 = 600 (không speaker nào vượt cap → không cắt mẫu)
+- **Speaker range**: min 34 (VIVOSDEV08) — max 300 (VIVOSSPK41) mẫu
+- Trung bình 167,5 | median 200 | std 97,1 mẫu/speaker
 
 ### 3.4 Phân bổ theo độ dài
 
-| Bin | Train | Dev | Test |
-|-----|-------|-----|------|
-| 0-3s | - | - | - |
-| 3-5s | - | - | - |
-| 5-10s | - | - | - |
-| 10-20s | - | - | - |
-| 20-30s | - | - | - |
+| Bin (giây) | Train | Dev | Test | Tổng |
+|-----|-------|-----|------|------|
+| (0, 3] | 1.762 | 327 | 175 | 2.264 |
+| (3, 5] | 3.697 | 565 | 792 | 5.054 |
+| (5, 10] | 2.668 | 192 | 303 | 3.163 |
+| (10, 20] | 126 | 0 | 280 | 406 |
+| (20, 30] | 0 | 0 | 0 | 0 |
 
-*(Sẽ cập nhật sau khi chạy pipeline)*
+*Tính từ `data/manifests/*.jsonl`. Tập trung ở 3–10s (75,5%).*
 
 ## 4. Hạn chế & Thiên lệch đã biết
 
@@ -254,8 +256,8 @@ Manifests (train/dev/test.jsonl)
 - Không có test cho hội thoại tự nhiên
 
 ### 4.3 Mất cân bằng vẫn tồn tại
-- Sau speaker cap và oversample, vẫn có sự lệch nhẹ
-- Giọng miền Nam/Nam Trung ít hơn giọng miền Bắc
+- Trên VIVOS, speaker cap (600) cao hơn speaker nhiều mẫu nhất (300) và chỉ có một ngôn ngữ → hai kỹ thuật tái lấy mẫu **không tạo khác biệt**; phân bố mẫu/speaker giữ nguyên (std 97,1)
+- Giọng 100% miền Bắc, không có mẫu Nam/Nam Trung
 
 ### 4.4 Dữ liệu dịch tiếng Anh
 - Không có bản dịch tiếng Anh gốc từ VIVOS
@@ -310,7 +312,7 @@ python -m src.data.prepare_data --config configs/baseline.yaml
 
 ## 8. Liên hệ & Cập nhật
 
-- **Người tạo**: Group members
+- **Người tạo**: Nguyễn Đức Mạnh (SE194525)
 - **Ngày tạo**: 2026-10-19
-- **Cập nhật cuối**: 2026-10-19
-- **Version**: 1.0
+- **Cập nhật cuối**: 2026-10-20
+- **Version**: 1.1

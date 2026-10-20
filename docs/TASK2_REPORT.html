@@ -304,15 +304,15 @@
 <p><strong>Kỹ thuật 1 - Speaker cap (giới hạn số mẫu mỗi người nói):</strong></p>
 <ul>
 <li>Công thức: <code>cap = median(số mẫu/speaker) × 3</code>.</li>
-<li>Mục đích: giảm overfitting vào các speaker có nhiều mẫu.</li>
-<li>Tác động: độ lệch chuẩn phân bố speaker giảm (~127,3 → ~95,2 theo <code>data/imbalance_analysis.md</code>), hi sinh ~1,6% tổng số mẫu.</li>
+<li>Trên VIVOS: median = 200 mẫu/speaker → <code>cap = 600</code>.</li>
+<li><strong>Kết quả thực đo:</strong> speaker nhiều mẫu nhất chỉ có 300 mẫu (&lt; 600) → <strong>không speaker nào vượt cap, 0 mẫu bị loại</strong>. Đây là số liệu trung thực thay cho giả định "giảm ~25% độ lệch chuẩn".</li>
 </ul>
-<p><strong>Kỹ thuật 2 - Oversample nhóm thiểu số:</strong></p>
+<p><strong>Kỹ thuật 2 - Oversample nhóm ngôn ngữ thiểu số:</strong></p>
 <ul>
-<li>Mục tiêu đưa nhóm thiểu số lên ~85% nhóm đa số.</li>
-<li>Với VIVOS (100% tiếng Việt) → không có nhóm ngôn ngữ thiểu số để oversample; kỹ thuật này <strong>không tác động</strong> trên VIVOS và được ghi nhận rõ là không đổi kết quả.</li>
+<li>Chỉ kích hoạt khi tập train có ≥ 2 ngôn ngữ.</li>
+<li>VIVOS 100% tiếng Việt → kỹ thuật này <strong>không kích hoạt</strong> trên bộ dữ liệu này (được ghi nhận rõ, không tô hồng kết quả).</li>
 </ul>
-<p><strong>Bảng trước/sau (nguồn <code>data/imbalance_analysis.md</code>):</strong></p>
+<p><strong>Bảng trước/sau (nguồn <code>data/manifests/pipeline_report.json</code>):</strong></p>
 <table>
 <thead>
 <tr>
@@ -324,10 +324,10 @@
 </thead>
 <tbody>
 <tr>
-<td>Tổng mẫu</td>
-<td>12.420</td>
-<td>~12.200</td>
-<td>-200 (~-1,6%)</td>
+<td>Tổng mẫu (sau làm sạch + dedup)</td>
+<td>10.887</td>
+<td>10.887</td>
+<td>0</td>
 </tr>
 <tr>
 <td>Số speaker</td>
@@ -337,31 +337,37 @@
 </tr>
 <tr>
 <td>Trung bình mẫu/speaker</td>
-<td>191,1</td>
-<td>~187,7</td>
-<td>-3,4</td>
+<td>167,5</td>
+<td>167,5</td>
+<td>0</td>
 </tr>
 <tr>
 <td>Median mẫu/speaker</td>
-<td>148</td>
-<td>148</td>
+<td>200</td>
+<td>200</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Min mẫu/speaker</td>
+<td>34</td>
+<td>34</td>
 <td>0</td>
 </tr>
 <tr>
 <td>Max mẫu/speaker</td>
-<td>512</td>
-<td>444</td>
-<td>-68 (-13,3%)</td>
+<td>300</td>
+<td>300</td>
+<td>0</td>
 </tr>
 <tr>
-<td>Std deviation</td>
-<td>127,3</td>
-<td>~95,2</td>
-<td>-32,1 (-25,2%)</td>
+<td>Std mẫu/speaker</td>
+<td>97,1</td>
+<td>97,1</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Nhận xét tác động:</strong> Speaker cap làm phân bố đều hơn rõ rệt (std giảm ~25%) với chi phí dữ liệu rất nhỏ (~1,6%) → chấp nhận được. Hai hạn chế <strong>không thể khắc phục</strong> bằng kỹ thuật tái lấy mẫu: (i) vùng miền 100% Bắc và (ii) fluidity độ dài câu — vì VIVOS không có mẫu Nam/Trung. Đây là lý do hợp lý vì sao không thể cân bằng hơn.</p>
+<p><strong>Nhận xét tác động (trung thực):</strong> Hai kỹ thuật tái lấy mẫu <strong>không tạo khác biệt đo được</strong> trên VIVOS vì (i) cap (600) cao hơn hẳn speaker nhiều mẫu nhất (300) và (ii) dữ liệu chỉ có một ngôn ngữ. Giá trị thực của Giai đoạn 1 nằm ở các bước làm sạch dữ liệu: loại <strong>1.524 mẫu trùng lặp</strong> (MD5 audio/text), lọc <strong>9 mẫu lỗi</strong> (5 silent + 4 alignment fail), chuẩn hoá Unicode NFC, và <strong>chia tập theo speaker chống rò rỉ</strong> (train 47 / dev 9 / test 9 speaker — không speaker nào xuất hiện ở hai tập). Hai hạn chế <strong>không thể khắc phục</strong> bằng tái lấy mẫu là (i) vùng miền 100% Bắc và (ii) phân bố độ dài câu — vì VIVOS không có mẫu Nam/Trung.</p>
 <h3>1.6. Tái lập</h3>
 <pre><code class="language-bash"># Chuẩn bị dữ liệu (từ VIVOS thô → manifests)
 python -m src.data.prepare_data --config configs/baseline.yaml
